@@ -4,7 +4,6 @@ import types
 import logging
 import textwrap
 import traceback
-import collections.abc
 import typing as t
 from contextlib import redirect_stdout
 
@@ -45,15 +44,15 @@ async def eval(ctx: utils.Context) -> None:
     env: t.Dict[
         str,
         t.Union[
-            types.ModuleType,                 # src
-            utils.Context,                    # ctx
-            main.CiberBot,                    # bot, app
-            hikari.Message,                   # msg, message
-            t.Optional[int],                  # server_id, guild_id
-            int,                              # channel_id, user_id, author_id
-            hikari.User,                      # author
-            t.Callable[[t.Any, t.Any], None], # eprint
-            t.Any,                            # code
+            types.ModuleType,  # src
+            utils.Context,  # ctx
+            main.CiberBot,  # bot, app
+            hikari.Message,  # msg, message
+            t.Optional[int],  # server_id, guild_id
+            int,  # channel_id, user_id, author_id
+            hikari.User,  # author
+            t.Callable[[t.Any, t.Any], None],  # eprint
+            t.Any,  # code
         ],
     ] = {
         "src": src,
