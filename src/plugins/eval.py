@@ -21,25 +21,9 @@ def eprint(*args: t.Any, **kwargs: t.Any) -> None:
     print(*args, file=sys.stderr, **kwargs)
 
 
-@plugin.command()
-@lightbulb.add_checks(lightbulb.owner_only)
-@lightbulb.option(
-    "raw_source", "source code to run", modifier=OptionModifier.CONSUME_REST
-)
-@lightbulb.command("eval", "Evaluates python code.", hidden=True)
-@lightbulb.implements(lightbulb.PrefixCommand)
-async def eval(ctx: utils.Context) -> None:
+async def eval_python(ctx: utils.Context, code: str, should_reply: bool) -> None:
     if not isinstance(ctx.event, hikari.MessageCreateEvent):
         return
-
-    logging.warning("Running eval command.")
-
-    code = ctx.options.raw_source
-
-    if code.startswith("```") and code.endswith("\n```"):
-        code = "\n".join(code.split("\n")[1:-1])
-    else:
-        code = code.strip("` \n")
 
     env: t.Dict[
         str,
@@ -76,51 +60,86 @@ async def eval(ctx: utils.Context) -> None:
     new_forced_async_code = f"async def code():\n{textwrap.indent(code, '    ')}"
 
     try:
-        logging.warning("Preparing eval.")
+        logging.debug("Preparing eval.")
         exec(new_forced_async_code, env)
     except Exception as error:
-        embed = hikari.Embed(
-            title="Failed to execute.",
-            description=f"{error} ```py\n{traceback.format_exc()}\n```\n```py\n{error.__class__.__name__}\n```",
-            colour=(255, 10, 40),
-        )
+        if should_reply:
+            embed = hikari.Embed(
+                title="Failed to execute.",
+                description=f"{error} ```py\n{traceback.format_exc()}\n```\n```py\n{error.__class__.__name__}\n```",
+                colour=(255, 10, 40),
+            )
 
-        await ctx.respond(embed=embed)
-        await ctx.event.message.add_reaction("❌")
+            await ctx.respond(embed=embed)
+            await ctx.event.message.add_reaction("❌")
+        else:
+            logging.error(error)
+            logging.error(traceback.format_exc())
+            logging.error(error.__class__.__name__)
 
         return
 
     code_function: t.Any = env["code"]
 
     try:
-        logging.warning("Running eval.")
+        logging.debug("Running eval.")
         with redirect_stdout(stdout):
             result = await code_function()
     except Exception as error:
         value = stdout.getvalue()
 
-        embed = hikari.Embed(
-            title="Failed to execute.",
-            description=f"{error} ```py\n{traceback.format_exc()}\n```\n```py\n{value}\n```",
-            colour=(255, 10, 40),
-        )
+        if should_reply:
+            embed = hikari.Embed(
+                title="Failed to execute.",
+                description=f"{error} ```py\n{traceback.format_exc()}\n```\n```py\n{value}\n```",
+                colour=(255, 10, 40),
+            )
 
-        await ctx.respond(embed=embed)
-        await ctx.event.message.add_reaction("❌")
+            await ctx.respond(embed=embed)
+            await ctx.event.message.add_reaction("❌")
+        else:
+            logging.error(error)
+            logging.error(traceback.format_exc())
+            logging.error(value)
 
         return
 
-    logging.warning("Finishing eval.")
-    value = stdout.getvalue()
+    logging.debug("Finishing eval.")
 
-    embed = hikari.Embed(
-        title="Success!",
-        description=f"Returned value: ```py\n{result}\n```\nStandard Output: ```py\n{value}\n```",
-        colour=(5, 255, 70),
-    )
+    if should_reply:
+        value = stdout.getvalue()
 
-    await ctx.respond(embed=embed)
-    await ctx.event.message.add_reaction("✅")
+        embed = hikari.Embed(
+            title="Success!",
+            description=f"Returned value: ```py\n{result}\n```\nStandard Output: ```py\n{value}\n```",
+            colour=(5, 255, 70),
+        )
+
+        await ctx.respond(embed=embed)
+        await ctx.event.message.add_reaction("✅")
+
+
+@plugin.command()
+@lightbulb.add_checks(lightbulb.owner_only)
+@lightbulb.option(
+    "raw_source", "source code to run", modifier=OptionModifier.CONSUME_REST
+)
+@lightbulb.command(
+    "admin_eval", "Evaluates python code.", hidden=True, aliases=["eval"]
+)
+@lightbulb.implements(lightbulb.PrefixCommand)
+async def admin_eval(ctx: utils.Context) -> None:
+    code = ctx.options.raw_source
+
+    logging.warning("Running eval command.")
+    logging.warning(code)
+
+    if code.startswith("```") and code.endswith("\n```"):
+        code = "\n".join(code.split("\n")[1:-1])
+    else:
+        code = code.strip("` \n")
+
+    await eval_python(ctx, code, True)
 
 
 def load(bot: main.CiberBot) -> None:
