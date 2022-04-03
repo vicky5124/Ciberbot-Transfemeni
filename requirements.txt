@@ -3,3 +3,4 @@ aiosqlite==0.17.0
 hikari==2.0.0.dev108
 hikari-lightbulb==2.2.1
 toml==0.10.2
+uvloop>=0.16; sys_platform != "win32"
