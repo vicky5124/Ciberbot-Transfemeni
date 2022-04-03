@@ -1,4 +1,10 @@
 [discord]
-token = ""
+token = "" # https://discord.com/developers/applications/<APP_ID>/bot
 prefix = "!"
-guild_ids = [182892283111276544]
+guild_ids = [182892283111276544] # Guilds to register slash commands on.
+
+[reaction_roles.color_roles]
+message_id = 960190427456221224
+# Match the role id and the emoji name with indexes.
+role_ids = [960191030479704115, 960191078248628234, 960205154488037436]
+emoji_names = ["💜", "💚", "doggo"]

@@ -3,8 +3,31 @@ import os
 import toml
 import hikari
 import lightbulb
+import aiosqlite
 
 from src.config import Config
+
+
+class CiberBot(lightbulb.BotApp):
+    __slots__ = ("db", "config")
+
+    def __init__(self) -> None:
+        with open("Config.toml", "r", encoding="utf-8") as file:
+            config = toml.load(file, Config)
+
+        super().__init__(
+            token=config.discord.token,
+            prefix=config.discord.prefix,
+            default_enabled_guilds=config.discord.guild_ids,
+            intents=hikari.Intents.GUILD_MESSAGES
+            | hikari.Intents.GUILDS
+            | hikari.Intents.MESSAGE_CONTENT
+            | hikari.Intents.GUILD_MESSAGE_REACTIONS,
+        )
+
+        self.config: Config = config
+        self.db: aiosqlite.Connection
+        self.load_extensions_from("./src/plugins")
 
 
 def run() -> None:
@@ -13,19 +36,7 @@ def run() -> None:
 
         uvloop.install()
 
-    with open("Config.toml", "r", encoding="utf-8") as file:
-        config = toml.load(file, Config)
-
-    bot = lightbulb.BotApp(
-        token=config.discord.token,
-        prefix=config.discord.prefix,
-        default_enabled_guilds=config.discord.guild_ids,
-        intents=hikari.Intents.GUILD_MESSAGES,
-    )
-
-    bot.d.config = config
-
-    bot.load_extensions_from("./src/plugins")
+    bot = CiberBot()
 
     bot.run(
         activity=hikari.Activity(
