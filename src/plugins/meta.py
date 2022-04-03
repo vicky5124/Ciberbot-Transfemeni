@@ -15,6 +15,7 @@ async def starting_event(plug: lightbulb.Plugin, _: hikari.StartingEvent) -> Non
     db = await aiosqlite.connect("ciberbot.db")
     plug.d.db = db
 
+
 @plugin.listener(hikari.StoppingEvent, bind=True)
 async def stopped_event(plug: lightbulb.Plugin, _: hikari.StoppingEvent) -> None:
     await plug.d.db.close()
@@ -25,6 +26,7 @@ async def stopped_event(plug: lightbulb.Plugin, _: hikari.StoppingEvent) -> None
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def ping(ctx: lightbulb.Context) -> None:
     await ctx.respond("Pong!")
+
 
 def load(bot: lightbulb.BotApp) -> None:
     bot.add_plugin(plugin)

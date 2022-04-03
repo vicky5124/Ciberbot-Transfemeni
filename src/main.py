@@ -6,6 +6,7 @@ import lightbulb
 
 from src.config import Config
 
+
 def run() -> None:
     if os.name != "nt":
         import uvloop
@@ -27,8 +28,8 @@ def run() -> None:
     bot.load_extensions_from("./src/plugins")
 
     bot.run(
-       activity=hikari.Activity(
-           name="cute transbians!",
-           type=hikari.ActivityType.WATCHING,
-       ),
+        activity=hikari.Activity(
+            name="cute transbians!",
+            type=hikari.ActivityType.WATCHING,
+        ),
     )
