@@ -14,7 +14,7 @@ from lightbulb.commands.base import OptionModifier
 import src
 from src import utils, main
 
-plugin = lightbulb.Plugin("Meta commands")
+plugin = utils.Plugin("Eval commands")
 
 
 def eprint(*args: t.Any, **kwargs: t.Any) -> None:
