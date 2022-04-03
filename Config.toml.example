@@ -8,3 +8,8 @@ message_id = 960190427456221224
 # Match the role id and the emoji name with indexes.
 role_ids = [960191030479704115, 960191078248628234, 960205154488037436]
 emoji_names = ["💜", "💚", "doggo"]
+
+[[notifications]]
+channel_id = 911224587931488296
+message = "Test"
+cron = "0 11 * * *"
