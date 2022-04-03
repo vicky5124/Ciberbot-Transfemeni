@@ -1,3 +1,4 @@
 [discord]
 token = ""
 prefix = "!"
+guild_ids = [182892283111276544]
