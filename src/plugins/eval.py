@@ -1,3 +1,4 @@
+import asyncio
 import io
 import sys
 import types
@@ -83,8 +84,28 @@ async def eval_python(ctx: utils.Context, code: str, should_reply: bool) -> None
 
     try:
         logging.debug("Running eval.")
+
         with redirect_stdout(stdout):
-            result = await code_function()
+            result = await asyncio.wait_for(
+                code_function(), timeout=ctx.bot.config.commands.eval_timeout
+            )
+    except asyncio.TimeoutError:
+        value = stdout.getvalue()
+
+        if should_reply:
+            embed = hikari.Embed(
+                title="The code took too long to execute.",
+                description=f"Standard Output: ```py\n{value}\n```",
+                colour=(168, 80, 100),
+            )
+
+            await ctx.respond(embed=embed)
+            await ctx.event.message.add_reaction("❌")
+        else:
+            logging.error("The code took too long to execute.")
+            logging.error(f"Standard Output: {value}")
+
+        return
     except Exception as error:
         value = stdout.getvalue()
 
