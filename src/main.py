@@ -1,14 +1,12 @@
 import os
-import pathlib
 
 import toml
 import hikari
 import lightbulb
 
-from config import Config
+from src.config import Config
 
-# if main is imported, don't run this code.
-if __name__ == "__main__":
+def run() -> None:
     if os.name != "nt":
         import uvloop
 
@@ -26,13 +24,7 @@ if __name__ == "__main__":
 
     bot.d.config = config
 
-    path = pathlib.Path("./src/plugins")
-    path = path.resolve().relative_to(pathlib.Path.cwd())
-    glob = path.glob
-
-    for ext_path in glob("[!_]*.py"):
-        ext = str(ext_path.with_suffix("")).split(os.sep)[1:]
-        bot.load_extensions(".".join(ext))
+    bot.load_extensions_from("./src/plugins")
 
     bot.run(
        activity=hikari.Activity(
