@@ -86,7 +86,9 @@ async def eval_python(ctx: t.Union[utils.Context, main.CiberBot], code: str) -> 
 
     try:
         logging.debug("Running eval.")
+
         with redirect_stdout(stdout):
+<<<<<<< HEAD
             if isinstance(ctx, lightbulb.Context):
                 result = await asyncio.wait_for(
                     code_function(), timeout=ctx.bot.config.commands.eval_timeout
@@ -95,13 +97,21 @@ async def eval_python(ctx: t.Union[utils.Context, main.CiberBot], code: str) -> 
                 result = await asyncio.wait_for(
                     code_function(), timeout=ctx.config.commands.eval_timeout
                 )
+=======
+            result = await asyncio.wait_for(
+                code_function(), timeout=ctx.bot.config.commands.eval_timeout
+            )
+>>>>>>> 4eccf6f (Implement execution timeout to the admin eval)
     except asyncio.TimeoutError:
         value = stdout.getvalue()
 
         if should_reply:
+<<<<<<< HEAD
             assert isinstance(ctx, lightbulb.Context)
             assert isinstance(ctx.event, hikari.MessageCreateEvent)
 
+=======
+>>>>>>> 4eccf6f (Implement execution timeout to the admin eval)
             embed = hikari.Embed(
                 title="The code took too long to execute.",
                 description=f"Standard Output: ```py\n{value}\n```",
