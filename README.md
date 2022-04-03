@@ -12,3 +12,4 @@ Documentation:
 
 - [lightbulb](https://hikari-lightbulb.readthedocs.io/en/latest/)
 - [hikari](https://davfsa.github.io/hikari-docs/stable/)
+- [aiosqlite](https://aiosqlite.omnilib.dev/en/latest/index.html)
