@@ -28,6 +28,7 @@ class ConfigReactionRoles(t.Dict[str, t.Any]):
         super(ConfigReactionRoles, self).__init__(*args, **kwargs)
         self.__dict__ = self
 
+
 class ConfigNotifications(t.Dict[str, t.Any]):
     channel_id: int
     message: str
