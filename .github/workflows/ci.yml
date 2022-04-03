@@ -21,7 +21,7 @@ jobs:
 
       - name: Setup dependencies
         run: |
-          pip install -U mypy black
+          pip install -U mypy black pip
           pip install -r requirements.txt
           mypy --install-types --non-interactive src
 
