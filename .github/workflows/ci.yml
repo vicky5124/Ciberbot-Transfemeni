@@ -8,24 +8,24 @@ on:
   pull_request:
 
 jobs:
-  lint:
+  lint-and-fmt:
     runs-on: ubuntu-latest
-  steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-  
-    - name: Install python 3.10
-      uses: actions/setup-python@v2
-      with:
-        python-version: "3.10"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+    
+      - name: Install python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
 
-    - name: Setup dependencies
-      run: |
-        pip install -U mypy black
-        pip install -r requirements.txt
+      - name: Setup dependencies
+        run: |
+          pip install -U mypy black
+          pip install -r requirements.txt
 
-    - name: Format check
-      run: black src --check
+      - name: Format check
+        run: black src --check
 
-    - name: MyPy linting
-      run: mypy src
+      - name: MyPy linting
+        run: mypy src
