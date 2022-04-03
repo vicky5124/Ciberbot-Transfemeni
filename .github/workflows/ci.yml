@@ -23,7 +23,7 @@ jobs:
         run: |
           pip install -U mypy black
           pip install -r requirements.txt
-          mypy --install-types
+          mypy --install-types src
 
       - name: Format check
         run: black src --check
