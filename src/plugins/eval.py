@@ -1,3 +1,4 @@
+import asyncio
 import io
 import sys
 import logging
@@ -86,7 +87,34 @@ async def eval_python(ctx: t.Union[utils.Context, main.CiberBot], code: str) -> 
     try:
         logging.debug("Running eval.")
         with redirect_stdout(stdout):
-            result = await code_function()
+            if isinstance(ctx, lightbulb.Context):
+                result = await asyncio.wait_for(
+                    code_function(), timeout=ctx.bot.config.commands.eval_timeout
+                )
+            else:
+                result = await asyncio.wait_for(
+                    code_function(), timeout=ctx.config.commands.eval_timeout
+                )
+    except asyncio.TimeoutError:
+        value = stdout.getvalue()
+
+        if should_reply:
+            assert isinstance(ctx, lightbulb.Context)
+            assert isinstance(ctx.event, hikari.MessageCreateEvent)
+
+            embed = hikari.Embed(
+                title="The code took too long to execute.",
+                description=f"Standard Output: ```py\n{value}\n```",
+                colour=(168, 80, 100),
+            )
+
+            await ctx.respond(embed=embed)
+            await ctx.event.message.add_reaction("❌")
+        else:
+            logging.error("The code took too long to execute.")
+            logging.error(f"Standard Output: {value}")
+
+        return
     except Exception as error:
         value = stdout.getvalue()
 
