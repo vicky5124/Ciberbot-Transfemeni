@@ -13,7 +13,13 @@ plugin = utils.Plugin("Notifications")
 async def start_all_tasks(plug: utils.Plugin, _: hikari.StartedEvent) -> None:
     async def cron_task(item: config.ConfigNotifications) -> None:
         logging.debug(item.message)
-        await plug.bot.rest.create_message(item.channel_id, item.message)
+        await plug.bot.rest.create_message(
+            item.channel_id,
+            item.message,
+            mentions_everyone=True,
+            role_mentions=True,
+            user_mentions=True,
+        )
 
     for i in plug.bot.config.notifications:
         logging.info(f"Starting task for:\n{i.message}")
