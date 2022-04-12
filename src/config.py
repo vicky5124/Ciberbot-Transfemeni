@@ -39,10 +39,19 @@ class ConfigNotifications(t.Dict[str, t.Any]):
         self.__dict__ = self
 
 
+class ConfigCommands(t.Dict[str, t.Any]):
+    eval_timeout: float
+
+    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
+        super(ConfigCommands, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+
 class Config(t.Dict[str, t.Any]):
     discord: ConfigDiscord
     reaction_roles: ConfigReactionRoles
     notifications: t.List[ConfigNotifications]
+    commands: ConfigCommands
 
     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
         super(Config, self).__init__(*args, **kwargs)
