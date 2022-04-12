@@ -29,6 +29,16 @@ class ConfigReactionRoles(t.Dict[str, t.Any]):
         self.__dict__ = self
 
 
+class ConfigNotifications(t.Dict[str, t.Any]):
+    channel_id: int
+    message: str
+    cron: str
+
+    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
+        super(ConfigNotifications, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+
 class ConfigCommands(t.Dict[str, t.Any]):
     eval_timeout: float
 
@@ -40,6 +50,7 @@ class ConfigCommands(t.Dict[str, t.Any]):
 class Config(t.Dict[str, t.Any]):
     discord: ConfigDiscord
     reaction_roles: ConfigReactionRoles
+    notifications: t.List[ConfigNotifications]
     commands: ConfigCommands
 
     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:

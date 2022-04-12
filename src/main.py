@@ -2,8 +2,9 @@ import os
 
 import toml
 import hikari
-import lightbulb
 import aiosqlite
+import lightbulb
+from lightbulb.ext import tasks
 
 from src.config import Config
 
@@ -37,6 +38,7 @@ def run() -> None:
         uvloop.install()
 
     bot = CiberBot()
+    tasks.load(bot)
 
     bot.run(
         activity=hikari.Activity(

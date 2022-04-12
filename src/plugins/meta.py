@@ -4,7 +4,7 @@ import lightbulb
 
 from src import utils, main
 
-plugin = lightbulb.Plugin("Meta commands")
+plugin = utils.Plugin("Meta commands")
 
 
 @plugin.listener(hikari.ShardReadyEvent)
