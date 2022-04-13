@@ -20,7 +20,7 @@ class CiberBot(lightbulb.BotApp):
             token=config.discord.token,
             prefix=config.discord.prefix,
             default_enabled_guilds=config.discord.guild_ids,
-            intents=hikari.Intents.GUILD_MESSAGES
+            intents=hikari.Intents.ALL_MESSAGES
             | hikari.Intents.GUILDS
             | hikari.Intents.MESSAGE_CONTENT
             | hikari.Intents.GUILD_MESSAGE_REACTIONS,
