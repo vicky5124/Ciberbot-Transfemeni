@@ -1,3 +1,5 @@
+import logging
+
 import aiosqlite
 import hikari
 import lightbulb
@@ -9,7 +11,7 @@ plugin = utils.Plugin("Meta commands")
 
 @plugin.listener(hikari.ShardReadyEvent)
 async def ready_event(_: hikari.ShardReadyEvent) -> None:
-    print("The bot is ready!")
+    logging.info("The bot is ready!")
 
 
 @plugin.listener(hikari.StartingEvent, bind=True)
