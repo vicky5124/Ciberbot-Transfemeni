@@ -200,8 +200,14 @@ async def skip(ctx: utils.Context) -> None:
 
     if not track:
         await ctx.respond("No hi ha cap cançó a la cua.")
+
         return
     else:
+        node = await plugin.bot.d.lavalink.get_guild_node(ctx.guild_id)
+
+        if not node.queue and not node.now_playing:
+            await plugin.bot.d.lavalink.stop(ctx.guild_id)
+
         await ctx.respond(f"Saltat: {track.track.info.title}")
 
 
