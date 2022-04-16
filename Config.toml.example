@@ -16,3 +16,8 @@ emoji_names = ["💜", "💚", "doggo"]
 channel_id = 911224587931488296
 message = "Test"
 cron = "0 11 * * *"
+
+[lavalink]
+host = "127.0.0.1"
+port = 2333
+password = "youshallnotpass"

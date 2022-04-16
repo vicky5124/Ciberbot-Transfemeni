@@ -5,3 +5,4 @@ hikari[speedups]==2.0.0.dev108
 git+https://github.com/tandemdude/hikari-lightbulb#egg=hikari-lightbulb[crontrigger]
 toml==0.10.2
 uvloop>=0.16; sys_platform != "win32"
+lavasnek-rs==0.1.0a5

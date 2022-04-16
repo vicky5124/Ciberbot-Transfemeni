@@ -5,12 +5,13 @@ import hikari
 import aiosqlite
 import lightbulb
 from lightbulb.ext import tasks
+from lavasnek_rs import Lavalink
 
 from src.config import Config
 
 
 class CiberBot(lightbulb.BotApp):
-    __slots__ = ("db", "config")
+    __slots__ = ("db", "config", "lavalink")
 
     def __init__(self) -> None:
         with open("Config.toml", "r", encoding="utf-8") as file:
@@ -23,11 +24,13 @@ class CiberBot(lightbulb.BotApp):
             intents=hikari.Intents.ALL_MESSAGES
             | hikari.Intents.GUILDS
             | hikari.Intents.MESSAGE_CONTENT
-            | hikari.Intents.GUILD_MESSAGE_REACTIONS,
+            | hikari.Intents.GUILD_MESSAGE_REACTIONS
+            | hikari.Intents.GUILD_VOICE_STATES,
         )
 
         self.config: Config = config
         self.db: aiosqlite.Connection
+        self.lavalink: Lavalink
         self.load_extensions_from("./src/plugins")
 
 
