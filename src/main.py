@@ -31,6 +31,7 @@ class CiberBot(lightbulb.BotApp):
         self.config: Config = config
         self.db: aiosqlite.Connection
         self.lavalink: Lavalink
+
         self.load_extensions_from("./src/plugins")
 
 

@@ -83,7 +83,7 @@ async def clear(ctx: utils.Context) -> None:
     node = await ctx.bot.lavalink.get_guild_node(ctx.guild_id)
 
     if not node or not node.queue:
-        await ctx.respond("La cua està buida.")
+        await ctx.respond("La cua ja es buida.")
         return
 
     queue = node.queue[1:]

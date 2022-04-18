@@ -10,6 +10,42 @@ plugin = utils.Plugin("Music (basic) commands")
 plugin.add_checks(lightbulb.guild_only)
 
 
+def generate_embed(info: lavasnek_rs.Info, requester: str) -> hikari.Embed:
+    embed = hikari.Embed(title=info.title, url=info.uri)
+    embed.set_thumbnail(f"https://i.ytimg.com/vi/{info.identifier}/default.jpg")
+    embed.set_footer(text=f"Submited by {requester}")
+    embed.add_field(name="Uploader", value=info.author, inline=True)
+
+    current = (info.position / 1000).__trunc__()
+    length = (info.length / 1000).__trunc__()
+
+    current_minutes = (current % 3600 / 60).__trunc__()
+    current_seconds = (current % 3600 % 60).__trunc__()
+
+    minutes = (length % 3600 / 60).__trunc__()
+    seconds = (length % 3600 % 60).__trunc__()
+
+    if length >= 3600:
+        current_hours = (current / 3600).__trunc__()
+        hours = (length / 3600).__trunc__()
+
+        value = "{}:{:02}:{:02} - {}:{:02}:{:02}".format(
+            current_hours, current_minutes, current_seconds, hours, minutes, seconds
+        )
+    else:
+        value = "{:02}:{:02} - {:02}:{:02}".format(
+            current_minutes, current_seconds, minutes, seconds
+        )
+
+    embed.add_field(
+        name="Length",
+        value=value,
+        inline=True,
+    )
+
+    return embed
+
+
 async def _join(ctx: utils.Context) -> t.Optional[hikari.Snowflake]:
     if not ctx.guild_id:
         return None
@@ -136,7 +172,10 @@ async def play(ctx: utils.Context) -> None:
         await ctx.respond(f"Utilitza `/join` primer.")
         return
 
-    await ctx.respond(f"Afegit a la cua: {query_information.tracks[0].info.title}")
+    await ctx.respond(
+        f"Afegit a la cua:",
+        embed=generate_embed(query_information.tracks[0].info, ctx.author.username),
+    )
 
 
 @play.child
@@ -202,13 +241,20 @@ async def skip(ctx: utils.Context) -> None:
         await ctx.respond("No hi ha cap cançó a la cua.")
 
         return
+
+    node = await plugin.bot.lavalink.get_guild_node(ctx.guild_id)
+
+    if not node or (not node.queue and not node.now_playing):
+        await plugin.bot.lavalink.stop(ctx.guild_id)
+
+    requester = ctx.bot.cache.get_user(track.requester)
+
+    if not requester:
+        username = "Unknown"
     else:
-        node = await plugin.bot.d.lavalink.get_guild_node(ctx.guild_id)
+        username = requester.username
 
-        if not node.queue and not node.now_playing:
-            await plugin.bot.d.lavalink.stop(ctx.guild_id)
-
-        await ctx.respond(f"Saltat: {track.track.info.title}")
+    await ctx.respond(f"Saltat:", embed=generate_embed(track.track.info, username))
 
 
 @plugin.command()
@@ -225,12 +271,12 @@ async def queue(ctx: utils.Context) -> None:
         return
 
     tracks = "\n".join(
-        f"{idx + 1}: {track.track.info.title}"
+        f"\u001b[1m\u001b[35m{idx + 1}: \u001b[0m\u001b[34m{track.track.info.title}"
         for idx, track in enumerate(node.queue)
         if idx < 10
     )
 
-    await ctx.respond(f"Cua amb {len(node.queue)} elements:\n{tracks}")
+    await ctx.respond(f"Cua amb {len(node.queue)} elements: ```ansi\n{tracks}\n```")
 
 
 @plugin.command()
@@ -250,7 +296,14 @@ async def now_playing(ctx: utils.Context) -> None:
 
     track = node.now_playing
 
-    await ctx.respond(f"Reproduint: {track.track.info.title}")
+    requester = ctx.bot.cache.get_user(track.requester)
+
+    if not requester:
+        username = "Unknown"
+    else:
+        username = requester.username
+
+    await ctx.respond(f"Reproduint:", embed=generate_embed(track.track.info, username))
 
 
 def load(bot: main.CiberBot) -> None:
