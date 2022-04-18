@@ -9,7 +9,7 @@ plugin.add_checks(lightbulb.guild_only)
 
 
 @plugin.command()
-@lightbulb.command("pause", "Pausa la reproduccio.")
+@lightbulb.command("pause", "Pausa la reproducció")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def pause(ctx: utils.Context) -> None:
     """Pauses the current track."""
@@ -21,7 +21,7 @@ async def pause(ctx: utils.Context) -> None:
 
 
 @plugin.command()
-@lightbulb.command("resume", "Reprdeix la reproduccio.")
+@lightbulb.command("resume", "Reprendre la reproducció")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def resume(ctx: utils.Context) -> None:
     """Resumes the current track."""
@@ -29,11 +29,11 @@ async def resume(ctx: utils.Context) -> None:
 
     await ctx.bot.lavalink.resume(ctx.guild_id)
 
-    await ctx.respond("Reproduccio represa.")
+    await ctx.respond("Reproducció represa.")
 
 
 @plugin.command()
-@lightbulb.command("stop", "Atura la reproduccio.")
+@lightbulb.command("stop", "Atura la reproducció")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def stop(ctx: utils.Context) -> None:
     """Stops the current track."""
@@ -45,8 +45,8 @@ async def stop(ctx: utils.Context) -> None:
 
 
 @plugin.command()
-@lightbulb.option("index", "L'index de la canço a eliminar.", type=int)
-@lightbulb.command("remove", "Elimina una canço de la cua.")
+@lightbulb.option("index", "L'índex de la cançó a eliminar", type=int)
+@lightbulb.command("remove", "Elimina una cançó de la cua")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def remove(ctx: utils.Context) -> None:
     """Removes a track from the queue."""
@@ -57,7 +57,7 @@ async def remove(ctx: utils.Context) -> None:
     node = await ctx.bot.lavalink.get_guild_node(ctx.guild_id)
 
     if not node or not node.queue:
-        await ctx.respond("La cua està buida.")
+        await ctx.respond("No n'hi ha cap cançó a la cua.")
         return
 
     try:
@@ -67,14 +67,14 @@ async def remove(ctx: utils.Context) -> None:
 
         await ctx.bot.lavalink.set_guild_node(ctx.guild_id, node)
     except IndexError:
-        await ctx.respond("L'index no es valid.")
+        await ctx.respond("L'índex no és vàlid.")
         return
 
     await ctx.respond(f"Eliminat: {track.track.info.title}")
 
 
 @plugin.command()
-@lightbulb.command("clear", "Elimina tota la cua.")
+@lightbulb.command("clear", "Elimina tota la cua")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def clear(ctx: utils.Context) -> None:
     """Clears the queue."""
@@ -94,12 +94,12 @@ async def clear(ctx: utils.Context) -> None:
 
     await ctx.bot.lavalink.set_guild_node(ctx.guild_id, node)
 
-    await ctx.respond("Cua buida.")
+    await ctx.respond("Cua buidada.")
 
 
 @plugin.command()
-@lightbulb.option("position", "El segon la canço on saltar.", type=int)
-@lightbulb.command("seek", "Salta a una posicio determinada.")
+@lightbulb.option("position", "El segon en la cançó on saltar", type=int)
+@lightbulb.command("seek", "Salta a una posició determinada")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def seek(ctx: utils.Context) -> None:
     """Seek to a position in the track."""
@@ -113,7 +113,7 @@ async def seek(ctx: utils.Context) -> None:
 
 
 @plugin.command()
-@lightbulb.command("shuffle", "Barreja la cua.")
+@lightbulb.command("shuffle", "Barreja la cua")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def shuffle(ctx: utils.Context) -> None:
     """Shuffles the queue."""
@@ -122,7 +122,7 @@ async def shuffle(ctx: utils.Context) -> None:
     node = await ctx.bot.lavalink.get_guild_node(ctx.guild_id)
 
     if not node or not node.queue:
-        await ctx.respond("La cua està buida.")
+        await ctx.respond("No n'hi ha cap cançó a la cua.")
         return
 
     queue = node.queue[1:]

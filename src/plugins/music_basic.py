@@ -14,8 +14,8 @@ plugin.add_checks(lightbulb.guild_only)
 def generate_embed(info: lavasnek_rs.Info, requester: str) -> hikari.Embed:
     embed = hikari.Embed(title=info.title, url=info.uri)
     embed.set_thumbnail(f"https://i.ytimg.com/vi/{info.identifier}/default.jpg")
-    embed.set_footer(text=f"Submited by {requester}")
-    embed.add_field(name="Uploader", value=info.author, inline=True)
+    embed.set_footer(text=f"Afegit a la cua per {requester}")
+    embed.add_field(name="Pujat per", value=info.author, inline=True)
 
     current = (info.position / 1000).__trunc__()
     length = (info.length / 1000).__trunc__()
@@ -39,7 +39,7 @@ def generate_embed(info: lavasnek_rs.Info, requester: str) -> hikari.Embed:
         )
 
     embed.add_field(
-        name="Length",
+        name="Longitut",
         value=value,
         inline=True,
     )
@@ -61,7 +61,7 @@ async def _join(ctx: utils.Context) -> t.Optional[hikari.Snowflake]:
         ]
 
         if not voice_state:
-            await ctx.respond("Connectet a un canal de veu primer.")
+            await ctx.respond("Connecta't a un canal de veu primer.")
             return None
 
         channel_id = voice_state[0].channel_id
@@ -88,7 +88,7 @@ async def _join(ctx: utils.Context) -> t.Optional[hikari.Snowflake]:
     channel_types=[hikari.ChannelType.GUILD_VOICE],
 )
 @lightbulb.command(
-    "join", "Entra en el canal de veu on estàs actualment, o el especificat."
+    "join", "Entra en el canal de veu on estàs actualment, o l'especificat."
 )
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def join(ctx: utils.Context) -> None:
@@ -126,7 +126,7 @@ async def play_base(ctx: utils.Context) -> t.Optional[str]:
     query: str = ctx.options.query
 
     if not query:
-        await ctx.respond("Especifica una busqueda o un URL.")
+        await ctx.respond("Especifica una cerca o un URL.")
         return None
 
     con = ctx.bot.lavalink.get_guild_gateway_connection_info(ctx.guild_id)
@@ -140,11 +140,11 @@ async def play_base(ctx: utils.Context) -> t.Optional[str]:
 @plugin.command()
 @lightbulb.option(
     "query",
-    "El terme de busqueda o el URL que afegir.",
+    "El terme de cerca o l'URL a afegir",
     modifier=lightbulb.OptionModifier.CONSUME_REST,
 )
 @lightbulb.command(
-    "play", "Busca la query en YouTube, o afegeix el URL directament a la cua."
+    "play", "Busca la query en YouTube, o afegeix l'URL directament a la cua"
 )
 @lightbulb.implements(
     lightbulb.PrefixCommandGroup,
@@ -182,11 +182,11 @@ async def play(ctx: utils.Context) -> None:
 @play.child
 @lightbulb.option(
     "query",
-    "URL amb la llista de reproduccio.",
+    "El terme de cerca o l'URL a afegir",
     modifier=lightbulb.OptionModifier.CONSUME_REST,
 )
 @lightbulb.command(
-    "single", "Busca la query en YouTube, o afegeix el URL directament a la cua."
+    "single", "Busca la query en YouTube, o afegeix l'URL directament a la cua"
 )
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def play_single(ctx: utils.Context) -> None:
@@ -197,10 +197,10 @@ async def play_single(ctx: utils.Context) -> None:
 @play.child
 @lightbulb.option(
     "query",
-    "URL amb la llista de reproduccio.",
+    "URL amb la llista de reproducció",
     modifier=lightbulb.OptionModifier.CONSUME_REST,
 )
-@lightbulb.command("list", "Afegeix tot el contingut de la URL directament a la cua.")
+@lightbulb.command("list", "Afegeix tot el contingut de l'URL directament a la cua")
 @lightbulb.implements(lightbulb.PrefixSubCommand, lightbulb.SlashSubCommand)
 async def play_list(ctx: utils.Context) -> None:
     """Adds all the URL results to the queue."""
@@ -226,11 +226,11 @@ async def play_list(ctx: utils.Context) -> None:
         await ctx.respond(f"Utilitza `/join` primer.")
         return
 
-    await ctx.respond(f"Playlist Afegida a la cua: <{query}>")
+    await ctx.respond(f"Llista de reproducció afegida a la cua: <{query}>")
 
 
 @plugin.command()
-@lightbulb.command("skip", "Salta la reproduccio.")
+@lightbulb.command("skip", "Salta la reproducció actual")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def skip(ctx: utils.Context) -> None:
     """Skips the current track."""
@@ -239,7 +239,7 @@ async def skip(ctx: utils.Context) -> None:
     track = await ctx.bot.lavalink.skip(ctx.guild_id)
 
     if not track:
-        await ctx.respond("No hi ha cap cançó a la cua.")
+        await ctx.respond("No n'hi ha cap cançó a la cua.")
 
         return
 
@@ -259,7 +259,7 @@ async def skip(ctx: utils.Context) -> None:
 
 
 @plugin.command()
-@lightbulb.command("queue", "Mostra la cua.")
+@lightbulb.command("queue", "Mostra la cua")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def queue(ctx: utils.Context) -> None:
     """Shows the current queue."""
@@ -268,7 +268,7 @@ async def queue(ctx: utils.Context) -> None:
     node = await ctx.bot.lavalink.get_guild_node(ctx.guild_id)
 
     if not node or not node.queue:
-        await ctx.respond("La cua està buida.")
+        await ctx.respond("No n'hi ha cap cançó a la cua.")
         return
 
     tracks = [
@@ -357,7 +357,7 @@ async def queue(ctx: utils.Context) -> None:
 
 @plugin.command()
 @lightbulb.command(
-    "now_playing", "Mostra la canço que esta reproduint.", aliases=["np"]
+    "now_playing", "Mostra la cançó que està reproduint", aliases=["np"]
 )
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def now_playing(ctx: utils.Context) -> None:
@@ -367,7 +367,7 @@ async def now_playing(ctx: utils.Context) -> None:
     node = await ctx.bot.lavalink.get_guild_node(ctx.guild_id)
 
     if not node or not node.now_playing:
-        await ctx.respond("No hi ha cap cançó a la cua.")
+        await ctx.respond("No n'hi ha cap cançó a la cua.")
         return
 
     track = node.now_playing
