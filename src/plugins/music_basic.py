@@ -1,3 +1,4 @@
+import asyncio
 import typing as t
 
 import hikari
@@ -270,13 +271,88 @@ async def queue(ctx: utils.Context) -> None:
         await ctx.respond("La cua està buida.")
         return
 
-    tracks = "\n".join(
+    tracks = [
         f"\u001b[1m\u001b[35m{idx + 1}: \u001b[0m\u001b[34m{track.track.info.title}"
         for idx, track in enumerate(node.queue)
-        if idx < 10
-    )
+    ]
 
-    await ctx.respond(f"Cua amb {len(node.queue)} elements: ```ansi\n{tracks}\n```")
+    per_page = 10
+
+    if len(tracks) <= per_page:
+        tracks_str = "\n".join(tracks)
+        await ctx.respond(
+            f"Cua amb {len(node.queue)} elements: ```ansi\n{tracks_str}\n```"
+        )
+    else:
+        start: int = 0
+        end: int = per_page
+
+        components = ctx.bot.rest.build_action_row()
+
+        button_start = components.add_button(1, "start")
+        button_prev = components.add_button(1, "prev")
+        button_next = components.add_button(1, "next")
+        button_end = components.add_button(1, "end")
+
+        button_start.set_emoji("⏮️")
+        button_prev.set_emoji("⬅️")
+        button_next.set_emoji("➡️")
+        button_end.set_emoji("⏭️")
+
+        button_start.add_to_container()
+        button_prev.add_to_container()
+        button_next.add_to_container()
+        button_end.add_to_container()
+
+        def predicate(event: hikari.InteractionCreateEvent) -> bool:
+            return event.interaction.type == 3 and isinstance(
+                event.interaction, hikari.ComponentInteraction
+            )
+
+        tracks_str = "\n".join(tracks[start:end])
+        msg = await ctx.respond(
+            f"Cua amb {len(node.queue)} elements: ```ansi\n{tracks_str}\n```",
+            component=components,
+        )
+
+        while True:
+            try:
+                event = await ctx.bot.wait_for(
+                    hikari.InteractionCreateEvent, timeout=30, predicate=predicate
+                )
+            except asyncio.TimeoutError:
+                await msg.edit(component=None)
+                return
+
+            assert isinstance(event.interaction, hikari.ComponentInteraction)
+
+            if event.interaction.custom_id == button_prev.custom_id:
+                start -= per_page
+                end -= per_page
+
+                if start < 0:
+                    start = 0
+                    end = per_page
+            elif event.interaction.custom_id == button_next.custom_id:
+                start += per_page
+                end += per_page
+
+                if end > len(tracks):
+                    end = len(tracks)
+                    start = end - per_page
+            elif event.interaction.custom_id == button_start.custom_id:
+                start = 0
+                end = per_page
+            elif event.interaction.custom_id == button_end.custom_id:
+                start = len(tracks) - per_page
+                end = len(tracks)
+
+            tracks_str = "\n".join(tracks[start:end])
+            await event.interaction.create_initial_response(
+                7,
+                f"Cua amb {len(node.queue)} elements: ```ansi\n{tracks_str}\n```",
+                component=components,
+            )
 
 
 @plugin.command()
