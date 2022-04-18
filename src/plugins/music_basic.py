@@ -356,9 +356,7 @@ async def queue(ctx: utils.Context) -> None:
 
 
 @plugin.command()
-@lightbulb.command(
-    "now_playing", "Mostra la cançó que està reproduint", aliases=["np"]
-)
+@lightbulb.command("now_playing", "Mostra la cançó que està reproduint", aliases=["np"])
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def now_playing(ctx: utils.Context) -> None:
     """Shows the current track."""
