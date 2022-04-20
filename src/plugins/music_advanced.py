@@ -137,11 +137,11 @@ async def shuffle(ctx: utils.Context) -> None:
 
 
 @plugin.command()
-@lightbulb.option("index1", "El primer índex a la cua")
-@lightbulb.option("index2", "El segon índex a la cua")
+@lightbulb.option("index2", "El segon índex a la cua", int, required=True)
+@lightbulb.option("index1", "El primer índex a la cua", int, required=True)
 @lightbulb.command("swap", "Intercanvia la posició de dos elements de la cua")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
-async def swap(ctx: utils.Context, index1: int, index2: int) -> None:
+async def swap(ctx: utils.Context) -> None:
     """Swaps the position of 2 items in the queue."""
     assert ctx.guild_id
 
@@ -154,11 +154,11 @@ async def swap(ctx: utils.Context, index1: int, index2: int) -> None:
         await ctx.respond("No n'hi ha cap cançó a la cua.")
         return
 
-    if index1 < 0 or index1 >= len(node.queue):
+    if index1 <= 1 or index1 >= len(node.queue):
         await ctx.respond("Index 1 no és vàlid.")
         return
 
-    if index2 < 0 or index2 >= len(node.queue):
+    if index2 <= 1 or index2 >= len(node.queue):
         await ctx.respond("Index 2 no és vàlid.")
         return
 
@@ -166,13 +166,13 @@ async def swap(ctx: utils.Context, index1: int, index2: int) -> None:
         await ctx.respond("Els dos index són el mateix.")
         return
 
-    track1 = node.queue[index1]
-    track2 = node.queue[index2]
+    track1 = node.queue[index1 - 1]
+    track2 = node.queue[index2 - 1]
 
     queue = node.queue
 
-    queue[index1] = track2
-    queue[index2] = track1
+    queue[index1 - 1] = track2
+    queue[index2 - 1] = track1
 
     node.queue = queue
 
