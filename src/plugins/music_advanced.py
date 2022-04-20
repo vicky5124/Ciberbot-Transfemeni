@@ -136,5 +136,50 @@ async def shuffle(ctx: utils.Context) -> None:
     await ctx.respond("Cua barrejada.")
 
 
+@plugin.command()
+@lightbulb.option("index1", "El primer índex a la cua")
+@lightbulb.option("index2", "El segon índex a la cua")
+@lightbulb.command("swap", "Intercanvia la posició de dos elements de la cua")
+@lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
+async def swap(ctx: utils.Context, index1: int, index2: int) -> None:
+    """Swaps the position of 2 items in the queue."""
+    assert ctx.guild_id
+
+    index1 = ctx.options.index1
+    index2 = ctx.options.index2
+
+    node = await ctx.bot.lavalink.get_guild_node(ctx.guild_id)
+
+    if not node or not node.queue:
+        await ctx.respond("No n'hi ha cap cançó a la cua.")
+        return
+
+    if index1 < 0 or index1 >= len(node.queue):
+        await ctx.respond("Index 1 no és vàlid.")
+        return
+
+    if index2 < 0 or index2 >= len(node.queue):
+        await ctx.respond("Index 2 no és vàlid.")
+        return
+
+    if index1 == index2:
+        await ctx.respond("Els dos index són el mateix.")
+        return
+
+    track1 = node.queue[index1]
+    track2 = node.queue[index2]
+
+    queue = node.queue
+
+    queue[index1] = track2
+    queue[index2] = track1
+
+    node.queue = queue
+
+    await ctx.bot.lavalink.set_guild_node(ctx.guild_id, node)
+
+    await ctx.respond("Cançons intercanvades.")
+
+
 def load(bot: main.CiberBot) -> None:
     bot.add_plugin(plugin)
