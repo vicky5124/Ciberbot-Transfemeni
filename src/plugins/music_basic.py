@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import typing as t
 
 import hikari
@@ -230,32 +231,56 @@ async def play_list(ctx: utils.Context) -> None:
 
 
 @plugin.command()
+@lightbulb.option("count", "Nombre de cançons a eliminar", int, default=1)
 @lightbulb.command("skip", "Salta la reproducció actual")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def skip(ctx: utils.Context) -> None:
     """Skips the current track."""
     assert ctx.guild_id
 
-    track = await ctx.bot.lavalink.skip(ctx.guild_id)
-
-    if not track:
-        await ctx.respond("No n'hi ha cap cançó a la cua.")
-
-        return
+    count = ctx.options.count
 
     node = await plugin.bot.lavalink.get_guild_node(ctx.guild_id)
 
-    if not node or (not node.queue and not node.now_playing):
-        await plugin.bot.lavalink.stop(ctx.guild_id)
+    if not node:
+        await ctx.respond("No estic connectat a cap canal de veu.")
+        return
 
-    requester = ctx.bot.cache.get_user(track.requester)
+    if count < 1:
+        await ctx.respond("El nombre de cançons a eliminar ha de ser major que 0.")
+        return
+    elif count > len(node.queue):
+        await ctx.respond(
+            f"El nombre de cançons a eliminar ha de ser menor que la longitud de la cua."
+        )
+        return
 
-    if not requester:
-        username = "Unknown"
+    del node # the node doesn't get modified while being held.
+
+    tracks = [await ctx.bot.lavalink.skip(ctx.guild_id) for _ in range(count)]
+
+    if len(tracks) > 1:
+        await ctx.respond(f"He staltat {len(tracks)} cançons.")
+    elif len(tracks) == 0:
+        await ctx.respond("No n'hi ha cap cançó a saltar.")
     else:
-        username = requester.username
+        track = tracks[0]
+        assert track
 
-    await ctx.respond(f"Saltat:", embed=generate_embed(track.track.info, username))
+        requester = ctx.bot.cache.get_user(track.requester)
+
+        if not requester:
+            username = "Unknown"
+        else:
+            username = requester.username
+
+        await ctx.respond(f"Saltat:", embed=generate_embed(track.track.info, username))
+
+    node = await plugin.bot.lavalink.get_guild_node(ctx.guild_id)
+    assert node
+
+    if not node.queue and not node.now_playing:
+        await plugin.bot.lavalink.stop(ctx.guild_id)
 
 
 @plugin.command()
