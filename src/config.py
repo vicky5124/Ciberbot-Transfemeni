@@ -11,18 +11,10 @@ class ConfigDiscord(t.Dict[str, t.Any]):
         self.__dict__ = self
 
 
-class ConfigColorRoles(t.Dict[str, t.Any]):
+class ConfigReactionRoles(t.Dict[str, t.Any]):
     message_id: int
     role_ids: t.List[int]
     emoji_names: t.List[str]
-
-    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
-        super(ConfigColorRoles, self).__init__(*args, **kwargs)
-        self.__dict__ = self
-
-
-class ConfigReactionRoles(t.Dict[str, t.Any]):
-    color_roles: ConfigColorRoles
 
     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
         super(ConfigReactionRoles, self).__init__(*args, **kwargs)
@@ -49,7 +41,7 @@ class ConfigCommands(t.Dict[str, t.Any]):
 
 class Config(t.Dict[str, t.Any]):
     discord: ConfigDiscord
-    reaction_roles: ConfigReactionRoles
+    reaction_roles: t.Dict[str, ConfigReactionRoles]
     notifications: t.List[ConfigNotifications]
     commands: ConfigCommands
 
