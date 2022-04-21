@@ -6,13 +6,13 @@ guild_ids = [182892283111276544] # Guilds to register slash commands on.
 [commands]
 eval_timeout = 10.0
 
-[reaction_roles.color_roles]
+[reaction_roles.color_roles] # there can be multiple reaction_roles
 message_id = 960190427456221224
 # Match the role id and the emoji name with indexes.
 role_ids = [960191030479704115, 960191078248628234, 960205154488037436]
 emoji_names = ["💜", "💚", "doggo"]
 
-[[notifications]]
+[[notifications]] # there can be multiple notifications
 channel_id = 911224587931488296
 message = "Test"
 cron = "0 11 * * *"
