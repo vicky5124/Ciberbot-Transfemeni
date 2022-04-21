@@ -1,4 +1,3 @@
-import logging
 import re
 import datetime
 
@@ -244,7 +243,6 @@ async def reminder_task(bot: main.CiberBot) -> None:
         rows = await cursor.fetchall()
         if not rows:
             return
-
 
     for row in rows:
         reminder_id, _, message, user_id, message_id, channel_id, guild_id = row
