@@ -255,7 +255,7 @@ async def skip(ctx: utils.Context) -> None:
         )
         return
 
-    del node # the node doesn't get modified while being held.
+    del node  # the node doesn't get modified while being held.
 
     tracks = [await ctx.bot.lavalink.skip(ctx.guild_id) for _ in range(count)]
 
