@@ -4,7 +4,7 @@ import aiosqlite
 import hikari
 import lightbulb
 
-from src import utils, main
+from src import utils, main, migrations
 
 plugin = utils.Plugin("Meta commands")
 
@@ -18,6 +18,12 @@ async def ready_event(_: hikari.ShardReadyEvent) -> None:
 async def starting_event(plug: utils.Plugin, _: hikari.StartingEvent) -> None:
     db = await aiosqlite.connect("ciberbot.db")
     plug.bot.db = db
+
+    await migrations.init_table(db)
+
+    physical_migrations = await migrations.get_physical_migrations()
+    if await migrations.validate_existing_migrations(db, physical_migrations):
+        await migrations.apply_migrations(db, physical_migrations)
 
 
 @plugin.listener(hikari.StoppingEvent, bind=True)
