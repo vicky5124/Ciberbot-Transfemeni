@@ -6,3 +6,4 @@ git+https://github.com/tandemdude/hikari-lightbulb#egg=hikari-lightbulb[crontrig
 toml==0.10.2
 uvloop>=0.16; sys_platform != "win32"
 lavasnek-rs==0.1.0a5
+yt-dlp==2022.4.8

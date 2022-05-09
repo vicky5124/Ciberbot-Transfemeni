@@ -3,6 +3,7 @@ import logging
 import typing as t
 
 import hikari
+import yt_dlp
 import lightbulb
 import lavasnek_rs
 
@@ -12,9 +13,16 @@ plugin = utils.Plugin("Music (basic) commands")
 plugin.add_checks(lightbulb.guild_only)
 
 
-def generate_embed(info: lavasnek_rs.Info, requester: str) -> hikari.Embed:
+def generate_embed(
+    info: lavasnek_rs.Info, requester: str, thumbnail: t.Optional[str] = None
+) -> hikari.Embed:
     embed = hikari.Embed(title=info.title, url=info.uri)
-    embed.set_thumbnail(f"https://i.ytimg.com/vi/{info.identifier}/default.jpg")
+
+    if thumbnail:
+        embed.set_thumbnail(thumbnail)
+    else:
+        embed.set_thumbnail(f"https://i.ytimg.com/vi/{info.identifier}/default.jpg")
+
     embed.set_footer(text=f"Afegit a la cua per {requester}")
     embed.add_field(name="Pujat per", value=info.author, inline=True)
 
@@ -160,23 +168,67 @@ async def play(ctx: utils.Context) -> None:
     if not query:
         return
 
+    ytdl_query = {}
+    is_ytdl = False
     query_information = await ctx.bot.lavalink.auto_search_tracks(query)
+
+    if not query_information.tracks:
+        is_ytdl = True
+
+        ytdl_format_options = {
+            "format": "bestaudio/best",
+            "restrictfilenames": True,
+            "noplaylist": True,
+            "nocheckcertificate": True,
+            "ignoreerrors": False,
+            "logtostderr": False,
+            "quiet": True,
+            "no_warnings": True,
+            "default_search": "auto",
+        }
+
+        ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
+
+        def extract() -> t.Dict[str, t.Any]:
+            info = ytdl.extract_info(query, download=False)
+            t.cast(t.Dict[str, t.Any], info)
+            return info  # type: ignore
+
+        loop = asyncio.get_event_loop()
+        ytdl_query = await loop.run_in_executor(None, extract)
+
+        # logging.warning(ytdl_query)
+
+        query_information = await ctx.bot.lavalink.auto_search_tracks(ytdl_query["url"])
 
     if not query_information.tracks:  # tracks is empty
         await ctx.respond("No he trobat cap resultat.")
         return
 
+    track = query_information.tracks[0]
+    info = track.info
+
+    if is_ytdl:
+        info.title = ytdl_query.get("title") or ""
+        info.author = ytdl_query.get("uploader") or ""
+
+    track.info = info
+
     try:
-        await ctx.bot.lavalink.play(
-            ctx.guild_id, query_information.tracks[0]
-        ).requester(ctx.author.id).queue()
+        await ctx.bot.lavalink.play(ctx.guild_id, track).requester(
+            ctx.author.id
+        ).queue()
     except lavasnek_rs.NoSessionPresent:
         await ctx.respond(f"Utilitza `/join` primer.")
         return
 
     await ctx.respond(
         f"Afegit a la cua:",
-        embed=generate_embed(query_information.tracks[0].info, ctx.author.username),
+        embed=generate_embed(
+            track.info,
+            ctx.author.username,
+            ytdl_query.get("thumbnail") if is_ytdl else None,
+        ),
     )
 
 
