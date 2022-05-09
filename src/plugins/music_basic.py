@@ -12,6 +12,19 @@ from src import utils, main
 plugin = utils.Plugin("Music (basic) commands")
 plugin.add_checks(lightbulb.guild_only)
 
+ytdl_format_options = {
+    "format": "bestaudio/best",
+    "restrictfilenames": True,
+    "noplaylist": True,
+    "nocheckcertificate": True,
+    "ignoreerrors": False,
+    "logtostderr": False,
+    "quiet": True,
+    "no_warnings": True,
+    "default_search": "auto",
+}
+ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
+
 
 def generate_embed(
     info: lavasnek_rs.Info, requester: str, thumbnail: t.Optional[str] = None
@@ -174,20 +187,6 @@ async def play(ctx: utils.Context) -> None:
 
     if not query_information.tracks:
         is_ytdl = True
-
-        ytdl_format_options = {
-            "format": "bestaudio/best",
-            "restrictfilenames": True,
-            "noplaylist": True,
-            "nocheckcertificate": True,
-            "ignoreerrors": False,
-            "logtostderr": False,
-            "quiet": True,
-            "no_warnings": True,
-            "default_search": "auto",
-        }
-
-        ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
 
         def extract() -> t.Dict[str, t.Any]:
             info = ytdl.extract_info(query, download=False)
