@@ -166,7 +166,9 @@ async def play_base(ctx: utils.Context) -> t.Optional[str]:
     modifier=lightbulb.OptionModifier.CONSUME_REST,
 )
 @lightbulb.command(
-    "play", "Busca la query en YouTube, o afegeix l'URL directament a la cua"
+    "play",
+    "Busca la query en YouTube, o afegeix l'URL directament a la cua",
+    auto_defer=True,
 )
 @lightbulb.implements(
     lightbulb.PrefixCommandGroup,
@@ -246,7 +248,9 @@ async def play(ctx: utils.Context) -> None:
     modifier=lightbulb.OptionModifier.CONSUME_REST,
 )
 @lightbulb.command(
-    "single", "Busca la query en YouTube, o afegeix l'URL directament a la cua"
+    "single",
+    "Busca la query en YouTube, o afegeix l'URL directament a la cua",
+    auto_defer=True,
 )
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def play_single(ctx: utils.Context) -> None:
@@ -260,7 +264,9 @@ async def play_single(ctx: utils.Context) -> None:
     "URL amb la llista de reproducció",
     modifier=lightbulb.OptionModifier.CONSUME_REST,
 )
-@lightbulb.command("list", "Afegeix tot el contingut de l'URL directament a la cua")
+@lightbulb.command(
+    "list", "Afegeix tot el contingut de l'URL directament a la cua", auto_defer=True
+)
 @lightbulb.implements(lightbulb.PrefixSubCommand, lightbulb.SlashSubCommand)
 async def play_list(ctx: utils.Context) -> None:
     """Adds all the URL results to the queue."""
