@@ -201,6 +201,14 @@ async def play(ctx: utils.Context) -> None:
         query_information = await ctx.bot.lavalink.auto_search_tracks(ytdl_query["url"])
 
     if not query_information.tracks:  # tracks is empty
+        valid = []
+        for i in ytdl_query["formats"]:
+            if not i.get("filesize_approx"):
+                valid.append(i["url"])
+
+        query_information = await ctx.bot.lavalink.auto_search_tracks(valid[-1])
+
+    if not query_information.tracks:  # tracks is empty
         await ctx.respond("No he trobat cap resultat.")
         return
 
@@ -208,8 +216,8 @@ async def play(ctx: utils.Context) -> None:
     info = track.info
 
     if is_ytdl:
-        info.title = ytdl_query.get("title") or ""
-        info.author = ytdl_query.get("uploader") or ""
+        info.title = ytdl_query.get("title") or "Unknown title"
+        info.author = ytdl_query.get("uploader") or "Unknown artist"
 
     track.info = info
 
