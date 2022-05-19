@@ -1,5 +1,5 @@
 import logging
-
+import sqlite3
 import aiosqlite
 import hikari
 import lightbulb
@@ -16,7 +16,7 @@ async def ready_event(_: hikari.ShardReadyEvent) -> None:
 
 @plugin.listener(hikari.StartingEvent, bind=True)
 async def starting_event(plug: utils.Plugin, _: hikari.StartingEvent) -> None:
-    db = await aiosqlite.connect("ciberbot.db")
+    db = await aiosqlite.connect("ciberbot.db", detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
     plug.bot.db = db
 
     await migrations.init_table(db)
