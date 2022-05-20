@@ -1,25 +1,26 @@
 import os
 import re
+import sys
 import hashlib
 import logging
+import traceback
 import typing as t
 
 import aiofiles
-import aiosqlite
+from cassandra.cluster import Session
 
 
-async def init_table(db: aiosqlite.Connection) -> None:
-    await db.execute(
+async def init_table(db: Session) -> None:
+    await db.execute_asyncio(
         """
-        CREATE TABLE IF NOT EXISTS __migrations (
-            id INTEGER PRIMARY KEY,
-            description TEXT NOT NULL,
-            checksum TEXT NOT NULL
+        CREATE TABLE IF NOT EXISTS priv_migration (
+            id INT,
+            description TEXT,
+            checksum TEXT,
+            PRIMARY KEY (id)
         )
         """
     )
-
-    await db.commit()
 
 
 async def get_checksum(filename: str) -> str:
@@ -28,8 +29,16 @@ async def get_checksum(filename: str) -> str:
         return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
+async def run_migrations(db: Session) -> None:
+    await init_table(db)
+
+    physical_migrations = await get_physical_migrations()
+    if await validate_existing_migrations(db, physical_migrations):
+        await apply_migrations(db, physical_migrations)
+
+
 async def get_physical_migrations() -> t.Dict[int, t.Tuple[str, str, str]]:
-    valid_file_re = re.compile(r"^(\d+)-(.+)\.sql$")
+    valid_file_re = re.compile(r"^(\d+)-(.+)\.cql$")
     all_filenames = os.listdir("migrations")
     valid_files = [f for f in all_filenames if valid_file_re.match(f)]
 
@@ -40,12 +49,16 @@ async def get_physical_migrations() -> t.Dict[int, t.Tuple[str, str, str]]:
         checksums.append(checksum)
 
     parsed_files = []
+    parsed_files_drops = []
 
     for file in valid_files:
         split = file.split("-")
         version = int(split[0])
         description = split[1][:-4]
-        parsed_files.append((version, description))
+        if description == "drop":
+            parsed_files_drops.append((version, description))
+        else:
+            parsed_files.append((version, description))
 
     values = [
         (int(f[0]), f[1], checksums[idx], valid_files[idx])
@@ -57,26 +70,25 @@ async def get_physical_migrations() -> t.Dict[int, t.Tuple[str, str, str]]:
 
 
 async def validate_existing_migrations(
-    db: aiosqlite.Connection, physical_migrations: t.Dict[int, t.Tuple[str, str, str]]
+    db: Session, physical_migrations: t.Dict[int, t.Tuple[str, str, str]]
 ) -> bool:
-    async with db.execute("SELECT * FROM __migrations") as cursor:
-        database_migrations = await cursor.fetchall()
+    database_migrations = await db.execute_asyncio("SELECT * FROM priv_migration")
 
     for db_migration in database_migrations:
-        if db_migration[0] in physical_migrations.keys():
-            if db_migration[2] != physical_migrations[db_migration[0]][1]:
+        if db_migration.id in physical_migrations.keys():
+            if db_migration.checksum != physical_migrations[db_migration[0]][1]:
                 logging.error(
-                    f"Migration {db_migration[0]} {db_migration[1]} has been modified since applied"
+                    f"Migration {db_migration.id} {db_migration.description} has been modified since applied"
                 )
                 return False
             else:
                 logging.info(
-                    f"Migration '{db_migration[0]} - {db_migration[1]}' already applied and is valid"
+                    f"Migration '{db_migration.id} - {db_migration.description}' already applied and is valid"
                 )
-                del physical_migrations[db_migration[0]]
+                del physical_migrations[db_migration.id]
         else:
             logging.error(
-                f"Migration {db_migration[0]} {db_migration[1]} has been removed since applied"
+                f"Migration {db_migration.id} {db_migration.description} has been removed since applied"
             )
             return False
 
@@ -89,17 +101,34 @@ async def validate_existing_migrations(
 
 
 async def apply_migrations(
-    db: aiosqlite.Connection, physical_migrations: t.Dict[int, t.Tuple[str, str, str]]
+    db: Session, physical_migrations: t.Dict[int, t.Tuple[str, str, str]]
 ) -> None:
     for (ph_migration_id, ph_migration) in physical_migrations.items():
         logging.info(f"Applying migration '{ph_migration_id} - {ph_migration[0]}'")
 
         async with aiofiles.open(f"migrations/{ph_migration[2]}", "r") as f:
             content = await f.read()
-            await db.executescript(content)
+            should_continue = False
+            for i in content.split(";"):
+                i = i.strip()
+                if i:
+                    try:
+                        await db.execute_asyncio(i)
+                    except Exception as e:
+                        logging.error(
+                            f"Error applying migration {ph_migration_id} - {ph_migration[0]}, calling drop."
+                        )
+                        await drop_migration_by_id(db, ph_migration_id, True)
+                        traceback.print_exception(
+                            type(e), e, e.__traceback__, file=sys.stderr
+                        )
+                        should_continue = True
 
-        await db.execute(
-            "INSERT INTO __migrations (id, description, checksum) VALUES (?, ?, ?)",
+            if should_continue:
+                continue
+
+        await db.execute_asyncio(
+            "INSERT INTO priv_migration (id, description, checksum) VALUES (%s, %s, %s)",
             (
                 ph_migration_id,
                 ph_migration[0],
@@ -107,6 +136,33 @@ async def apply_migrations(
             ),
         )
 
-        await db.commit()
-
         logging.info(f"Migration {ph_migration_id} applied")
+
+
+async def drop_migration_by_id(db: Session, id: int, skip_check: bool = False) -> None:
+    if not skip_check:
+        row = await db.execute_asyncio(
+            "SELECT * FROM priv_migration WHERE id = %s", (id,)
+        )
+
+        migration = row.one()
+
+        if not migration:
+            logging.error(f"The migration with the ID {id} has not been applied")
+            return
+
+        logging.info(f"Dropping migration '{migration.id} - {migration.description}'")
+    else:
+        logging.warning(f"Dropping migration '{id}'")
+
+    async with aiofiles.open(f"migrations/{id}-drop.cql", "r") as f:
+        content = await f.read()
+        await db.execute_asyncio(content)
+
+    if not skip_check:
+        await db.execute_asyncio(
+            "DELETE FROM priv_migration WHERE id = %s",
+            (id,),
+        )
+
+    logging.info(f"Migration {id} dropped")

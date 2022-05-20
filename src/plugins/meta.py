@@ -1,12 +1,42 @@
 import logging
-import sqlite3
-import aiosqlite
 import hikari
 import lightbulb
+from cassandra.cluster import (
+    Cluster,
+    ExecutionProfile,
+    EXEC_PROFILE_DEFAULT,
+    Session,
+)
+from cassandra.query import named_tuple_factory, dict_factory
+from cassandra.policies import DCAwareRoundRobinPolicy, TokenAwarePolicy
 
-from src import utils, main, migrations
+from src import utils, main, migrations, config
+from src.cassandra_async_session import load_asyncio_to_session
 
 plugin = utils.Plugin("Meta commands")
+
+
+def start_database(config: config.ConfigCassandra) -> Session:
+    tuple_profile = ExecutionProfile(
+        request_timeout=10,
+        row_factory=named_tuple_factory,
+        load_balancing_policy=TokenAwarePolicy(DCAwareRoundRobinPolicy()),
+    )
+    dict_profile = ExecutionProfile(
+        request_timeout=10,
+        row_factory=dict_factory,
+        load_balancing_policy=TokenAwarePolicy(DCAwareRoundRobinPolicy()),
+    )
+
+    profiles = {EXEC_PROFILE_DEFAULT: tuple_profile, "dict": dict_profile}
+
+    cluster = Cluster(
+        contact_points=config.hosts,
+        port=config.port,
+        execution_profiles=profiles,
+        protocol_version=4,
+    )
+    return load_asyncio_to_session(cluster.connect())
 
 
 @plugin.listener(hikari.ShardReadyEvent)
@@ -16,21 +46,24 @@ async def ready_event(_: hikari.ShardReadyEvent) -> None:
 
 @plugin.listener(hikari.StartingEvent, bind=True)
 async def starting_event(plug: utils.Plugin, _: hikari.StartingEvent) -> None:
-    db = await aiosqlite.connect(
-        "ciberbot.db", detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
+    plug.bot.db = start_database(plug.bot.config.cassandra)
+
+    await plug.bot.db.execute_asyncio(
+        f"""
+        CREATE KEYSPACE IF NOT EXISTS {plug.bot.config.cassandra.keyspace}
+            WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1' }}
+        """
     )
-    plug.bot.db = db
 
-    await migrations.init_table(db)
+    await plug.bot.db.set_keyspace_asyncio(plug.bot.config.cassandra.keyspace)
 
-    physical_migrations = await migrations.get_physical_migrations()
-    if await migrations.validate_existing_migrations(db, physical_migrations):
-        await migrations.apply_migrations(db, physical_migrations)
+    await migrations.run_migrations(plug.bot.db)
 
 
 @plugin.listener(hikari.StoppingEvent, bind=True)
 async def stopped_event(plug: utils.Plugin, _: hikari.StoppingEvent) -> None:
-    await plug.bot.db.close()
+    # plug.bot.db.shutdown()
+    pass
 
 
 @plugin.command()

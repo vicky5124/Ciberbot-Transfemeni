@@ -21,3 +21,8 @@ cron = "0 11 * * *"
 host = "127.0.0.1"
 port = 2333
 password = "youshallnotpass"
+
+[cassandra]
+hosts = ["127.0.0.1"]
+port = 9042
+keyspace = "ciberbot"

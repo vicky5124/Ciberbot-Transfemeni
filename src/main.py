@@ -2,10 +2,10 @@ import os
 
 import toml
 import hikari
-import aiosqlite
 import lightbulb
 from lightbulb.ext import tasks
 from lavasnek_rs import Lavalink
+from cassandra.cluster import Session
 
 from src.config import Config
 
@@ -29,7 +29,7 @@ class CiberBot(lightbulb.BotApp):
         )
 
         self.config: Config = config
-        self.db: aiosqlite.Connection
+        self.db: Session
         self.lavalink: Lavalink
 
         self.load_extensions_from("./src/plugins")

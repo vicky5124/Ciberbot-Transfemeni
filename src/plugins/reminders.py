@@ -1,8 +1,10 @@
 import re
+import logging
 import datetime
 
 import hikari
 import lightbulb
+import shortuuid
 from lightbulb.ext import tasks
 
 from src import utils, main
@@ -79,9 +81,12 @@ async def create_reminder(ctx: utils.Context) -> None:
     else:
         message_id = None
 
-    async with ctx.bot.db.execute(
-        "INSERT INTO reminder (user_id, message_id, channel_id, guild_id, time, content) VALUES (?, ?, ?, ?, ?, ?) RETURNING id",
+    reminder_id = shortuuid.uuid()[:8]
+
+    await ctx.bot.db.execute_asyncio(
+        "INSERT INTO reminder (id, user_id, message_id, channel_id, guild_id, datetime, content) VALUES (%s, %s, %s, %s, %s, %s, %s)",
         (
+            reminder_id,
             ctx.author.id,
             message_id,
             ctx.channel_id,
@@ -89,12 +94,7 @@ async def create_reminder(ctx: utils.Context) -> None:
             time,
             ctx.options.message or None,
         ),
-    ) as cursor:
-        row = await cursor.fetchone()
-        assert row
-        reminder_id = row[0]
-
-    await ctx.bot.db.commit()
+    )
 
     await ctx.respond(
         f"Recordatori guardat! El recordatori sera enviat <t:{int(time.timestamp())}:F>!\nID: {reminder_id}"
@@ -103,7 +103,7 @@ async def create_reminder(ctx: utils.Context) -> None:
 
 @reminder.child
 @lightbulb.option(
-    "reminder_id", "Quin recordatori vols cancel·lar?", int, required=True
+    "reminder_id", "Quin recordatori vols cancel·lar?", str, required=True
 )
 @lightbulb.command("delete", "Elimina un recordatori.", auto_defer=True)
 @lightbulb.implements(lightbulb.PrefixSubCommand, lightbulb.SlashSubCommand)
@@ -115,16 +115,25 @@ async def delete_reminder(ctx: utils.Context) -> None:
         await ctx.respond("No he pogut entendre l'ID del recordatori.")
         return
 
-    async with ctx.bot.db.execute(
-        "DELETE FROM reminder WHERE id = ? AND user_id = ? RETURNING id",
-        (ctx.options.reminder_id, ctx.author.id),
-    ) as cursor:
-        row = await cursor.fetchone()
-        if not row:
-            await ctx.respond("No tens cap recordatori amb aquesta ID.")
-            return
+    if len(ctx.options.reminder_id) != 8:
+        await ctx.respond("La ID es invalida.")
+        return
 
-    await ctx.bot.db.commit()
+    row = await ctx.bot.db.execute_asyncio(
+        "SELECT id, user_id, datetime FROM reminder WHERE id = %s AND user_id = %s",
+        (ctx.options.reminder_id, ctx.author.id),
+    )
+
+    reminder_pks = row.one()
+
+    if not reminder_pks:
+        await ctx.respond("No tens cap recordatori amb aquesta ID.")
+        return
+
+    await ctx.bot.db.execute_asyncio(
+        "DELETE FROM reminder WHERE id = %s AND user_id = %s AND datetime = %s",
+        (reminder_pks.id, reminder_pks.user_id, reminder_pks.datetime),
+    )
 
     await ctx.respond("Recordatori eliminat!")
 
@@ -140,22 +149,26 @@ async def clear_reminders(ctx: utils.Context) -> None:
     """
     Deletes all reminders.
     """
-    async with ctx.bot.db.execute(
-        "DELETE FROM reminder WHERE user_id = ?", (ctx.author.id,)
-    ) as cursor:
-        row = await cursor.fetchone()
-        if not row:
-            await ctx.respond("No tens cap recordatori.")
-            return
+    rows = await ctx.bot.db.execute_asyncio(
+        "SELECT id, datetime FROM reminder WHERE user_id = %s", (ctx.author.id,)
+    )
 
-    await ctx.bot.db.commit()
+    if not rows:
+        await ctx.respond("No tens cap recordatori.")
+        return
+
+    for i in rows:
+        await ctx.bot.db.execute_asyncio(
+            "DELETE FROM reminder WHERE user_id = %s AND id = %s AND datetime = %s",
+            (ctx.author.id, i.id, i.datetime),
+        )
 
     await ctx.respond("Tots els recordatoris eliminats!")
 
 
 @reminder.child
 @lightbulb.option(
-    "reminder_id", "Quin recordatori vols cancel·lar?", int, required=True
+    "reminder_id", "Quin recordatori vols cancel·lar?", str, required=True
 )
 @lightbulb.command(
     "info",
@@ -171,23 +184,28 @@ async def reminder_info(ctx: utils.Context) -> None:
         await ctx.respond("No he pogut entendre l'ID del recordatori.")
         return
 
-    async with ctx.bot.db.execute(
-        "SELECT id, time, content FROM reminder WHERE id = ? AND user_id = ?",
-        (ctx.options.reminder_id, ctx.author.id),
-    ) as cursor:
-        row = await cursor.fetchone()
-        if not row:
-            await ctx.respond("No tens cap recordatori amb aquest ID.")
-            return
+    if len(ctx.options.reminder_id) != 8:
+        await ctx.respond("La ID es invalida.")
+        return
 
-    reminder_id, time, message = row
-    if message:
+    row = await ctx.bot.db.execute_asyncio(
+        "SELECT id, datetime, content FROM reminder WHERE user_id = %s AND id = %s",
+        (ctx.author.id, ctx.options.reminder_id),
+    )
+
+    if not row:
+        await ctx.respond("No tens cap recordatori amb aquest ID.")
+        return
+
+    row = row.one()
+
+    if row.content:
         await ctx.respond(
-            f"ID: {reminder_id} - <t:{int(time.timestamp())}:F>\nMissatge: {message}"
+            f"ID: {row.id} - <t:{int(row.datetime.timestamp())}:F>\nMissatge: {row.content}"
         )
     else:
         await ctx.respond(
-            f"ID: {reminder_id} - <t:{int(time.timestamp())}:F>\nSense missatge."
+            f"ID: {row.id} - <t:{int(row.datetime.timestamp())}:F>\nSense missatge."
         )
 
 
@@ -202,30 +220,25 @@ async def list_reminders(ctx: utils.Context) -> None:
     """
     Lists all reminders.
     """
-    async with ctx.bot.db.execute(
-        "SELECT id, time, content FROM reminder WHERE user_id = ?", (ctx.author.id,)
-    ) as cursor:
-        rows = await cursor.fetchall()
-        if not rows:
-            await ctx.respond("No tens cap recordatori.")
-            return
+    rows = await ctx.bot.db.execute_asyncio(
+        "SELECT id, datetime, content FROM reminder WHERE user_id = %s",
+        (ctx.author.id,),
+    )
 
     if not rows:
         await ctx.respond("No tens cap recordatori.")
         return
 
     reminders = []
-    for row in rows:
-        time: datetime.datetime
-        reminder_id, time, message = row
 
-        if message:
+    for row in rows:
+        if row.content:
             reminders.append(
-                f"ID: {reminder_id} - <t:{int(time.timestamp())}:F>\nMissatge: {message}"
+                f"ID: {row.id} - <t:{int(row.datetime.timestamp())}:F>\nMissatge: {row.content}"
             )
         else:
             reminders.append(
-                f"ID: {reminder_id} - <t:{int(time.timestamp())}:F>\nSense missatge."
+                f"ID: {row.id} - <t:{int(row.datetime.timestamp())}:F>\nSense missatge."
             )
 
     await ctx.respond("\n\n".join(reminders))
@@ -236,33 +249,34 @@ async def reminder_task(bot: main.CiberBot) -> None:
     """
     Task that sends reminders.
     """
-    async with bot.db.execute(
-        "SELECT id, time, content, user_id, message_id, channel_id, guild_id FROM reminder WHERE time < ?",
+
+    # logging.info("TASK RUNNING")
+
+    rows = await bot.db.execute_asyncio(
+        "SELECT id, datetime, content, user_id, message_id, channel_id, guild_id FROM reminder WHERE datetime < %s ALLOW FILTERING",
         (datetime.datetime.now(),),
-    ) as cursor:
-        rows = await cursor.fetchall()
-        if not rows:
-            return
+    )
+
+    if not rows:
+        return
 
     for row in rows:
-        reminder_id, _, message, user_id, message_id, channel_id, guild_id = row
-
         embed = hikari.Embed(
-            title=f"Recordatori {reminder_id}!",
-            description=message,
+            title=f"Recordatori {row.id}!",
+            description=row.content,
         )
 
-        if guild_id and message_id:
-            embed.url = (
-                f"https://discord.com/channels/{guild_id}/{channel_id}/{message_id}"
-            )
+        if row.guild_id and row.message_id:
+            embed.url = f"https://discord.com/channels/{row.guild_id}/{row.channel_id}/{row.message_id}"
 
         await bot.rest.create_message(
-            channel_id, f"<@{user_id}>", embed=embed, user_mentions=True
+            row.channel_id, f"<@{row.user_id}>", embed=embed, user_mentions=True
         )
 
-        await bot.db.execute("DELETE FROM reminder WHERE id = ?", (reminder_id,))
-        await bot.db.commit()
+        await bot.db.execute_asyncio(
+            "DELETE FROM reminder WHERE id = %s AND user_id = %s AND datetime = %s",
+            (row.id, row.user_id, row.datetime),
+        )
 
 
 def load(bot: main.CiberBot) -> None:
