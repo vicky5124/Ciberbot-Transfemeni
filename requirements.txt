@@ -4,7 +4,7 @@ git+https://github.com/tandemdude/hikari-lightbulb#egg=hikari-lightbulb[crontrig
 
 aiofiles==0.8.0
 cassandra-driver==3.25.0
-shortuuid==1.1.0
+shortuuid==1.0.9
 
 uvloop>=0.16; sys_platform != "win32"
 aiohttp==3.8.1
