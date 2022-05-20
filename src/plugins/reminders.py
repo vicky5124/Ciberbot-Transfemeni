@@ -81,6 +81,7 @@ async def create_reminder(ctx: utils.Context) -> None:
     else:
         message_id = None
 
+    shortuuid.set_alphabet("23456789ABCDEFGHJKLMNPQRSTUVWXYZ")
     reminder_id = shortuuid.uuid()[:8]
 
     await ctx.bot.db.execute_asyncio(
@@ -121,7 +122,7 @@ async def delete_reminder(ctx: utils.Context) -> None:
 
     row = await ctx.bot.db.execute_asyncio(
         "SELECT id, user_id, datetime FROM reminder WHERE id = %s AND user_id = %s",
-        (ctx.options.reminder_id, ctx.author.id),
+        (ctx.options.reminder_id.upper(), ctx.author.id),
     )
 
     reminder_pks = row.one()
@@ -190,7 +191,7 @@ async def reminder_info(ctx: utils.Context) -> None:
 
     row = await ctx.bot.db.execute_asyncio(
         "SELECT id, datetime, content FROM reminder WHERE user_id = %s AND id = %s",
-        (ctx.author.id, ctx.options.reminder_id),
+        (ctx.author.id, ctx.options.reminder_id.upper()),
     )
 
     if not row:

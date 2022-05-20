@@ -4,7 +4,8 @@ Documentation:
 
 - [lightbulb](https://hikari-lightbulb.readthedocs.io/en/latest/)
 - [hikari](https://davfsa.github.io/hikari-docs/stable/)
-- [cassandra](https://docs.datastax.com/en/developer/python-driver/3.25/)
+- [cassandra-driver](https://docs.datastax.com/en/developer/python-driver/3.25/)
+- [cassandra-CQL](https://cassandra.apache.org/doc/latest/cassandra/cql/index.html)
 
 ## Running the bot (First time)
 
