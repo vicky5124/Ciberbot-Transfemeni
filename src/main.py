@@ -5,9 +5,9 @@ import hikari
 import lightbulb
 from lightbulb.ext import tasks
 from lavasnek_rs import Lavalink
-from cassandra.cluster import Session
 
 from src.config import Config
+from src.cassandra_async_session import AsyncioSession
 
 
 class CiberBot(lightbulb.BotApp):
@@ -29,7 +29,7 @@ class CiberBot(lightbulb.BotApp):
         )
 
         self.config: Config = config
-        self.db: Session
+        self.db: AsyncioSession
         self.lavalink: Lavalink
 
         self.load_extensions_from("./src/plugins")

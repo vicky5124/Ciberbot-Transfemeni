@@ -5,18 +5,17 @@ from cassandra.cluster import (
     Cluster,
     ExecutionProfile,
     EXEC_PROFILE_DEFAULT,
-    Session,
 )
 from cassandra.query import named_tuple_factory, dict_factory
 from cassandra.policies import DCAwareRoundRobinPolicy, TokenAwarePolicy
 
 from src import utils, main, migrations, config
-from src.cassandra_async_session import load_asyncio_to_session
+from src.cassandra_async_session import load_asyncio_to_session, AsyncioSession
 
 plugin = utils.Plugin("Meta commands")
 
 
-def start_database(config: config.ConfigCassandra) -> Session:
+def start_database(config: config.ConfigCassandra) -> AsyncioSession:
     tuple_profile = ExecutionProfile(
         request_timeout=10,
         row_factory=named_tuple_factory,

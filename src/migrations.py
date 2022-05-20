@@ -7,10 +7,10 @@ import traceback
 import typing as t
 
 import aiofiles
-from cassandra.cluster import Session
+from src.cassandra_async_session import AsyncioSession
 
 
-async def init_table(db: Session) -> None:
+async def init_table(db: AsyncioSession) -> None:
     await db.execute_asyncio(
         """
         CREATE TABLE IF NOT EXISTS priv_migration (
@@ -29,7 +29,7 @@ async def get_checksum(filename: str) -> str:
         return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
-async def run_migrations(db: Session) -> None:
+async def run_migrations(db: AsyncioSession) -> None:
     await init_table(db)
 
     physical_migrations = await get_physical_migrations()
@@ -70,7 +70,7 @@ async def get_physical_migrations() -> t.Dict[int, t.Tuple[str, str, str]]:
 
 
 async def validate_existing_migrations(
-    db: Session, physical_migrations: t.Dict[int, t.Tuple[str, str, str]]
+    db: AsyncioSession, physical_migrations: t.Dict[int, t.Tuple[str, str, str]]
 ) -> bool:
     database_migrations = await db.execute_asyncio("SELECT * FROM priv_migration")
 
@@ -101,7 +101,7 @@ async def validate_existing_migrations(
 
 
 async def apply_migrations(
-    db: Session, physical_migrations: t.Dict[int, t.Tuple[str, str, str]]
+    db: AsyncioSession, physical_migrations: t.Dict[int, t.Tuple[str, str, str]]
 ) -> None:
     for (ph_migration_id, ph_migration) in physical_migrations.items():
         logging.info(f"Applying migration '{ph_migration_id} - {ph_migration[0]}'")
@@ -139,7 +139,9 @@ async def apply_migrations(
         logging.info(f"Migration {ph_migration_id} applied")
 
 
-async def drop_migration_by_id(db: Session, id: int, skip_check: bool = False) -> None:
+async def drop_migration_by_id(
+    db: AsyncioSession, id: int, skip_check: bool = False
+) -> None:
     if not skip_check:
         row = await db.execute_asyncio(
             "SELECT * FROM priv_migration WHERE id = %s", (id,)
