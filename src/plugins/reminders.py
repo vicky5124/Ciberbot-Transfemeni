@@ -12,7 +12,7 @@ from src import utils, main
 plugin = utils.Plugin("Meta commands")
 
 regex = re.compile(
-    r"((?P<years>\d+?)(Y|y|years|year|A|a|anys|any|año|años))?((?P<months>\d+?)(M|months|month|mes))?((?P<weeks>\d+?)(W|w|weeks|week|S|setmana|setmanes|semanas|semana))?((?P<days>\d+?)(D|d|days|day|dias|dia))?((?P<hours>\d+?)(H|h|hr|hours|hour|hora|horas))?((?P<minutes>\d+?)(m|min|minutes|minuts|minuto|minutos|minut))?((?P<seconds>\d+?)(s|sec|seconds|segons|segons|segundo|segundos))?"
+    r"((?P<years>\d+?)(Y|y|years|year|A|a|anys|any|año|años))?((?P<months>\d+?)(M|months|month|mes))?((?P<weeks>\d+?)(W|w|weeks|week|S|setmana|setmanes|semanas|semana))?((?P<days>\d+?)(D|d|days|day|dias|dia))?((?P<hours>\d+?)(H|h|hr|hours|hour|hora|horas))?((?P<minutes>\d+?)(m|min|minutes|minuts|minuto|minutos|minut))?((?P<seconds>\d+?)(s|sec|seg|seconds|segons|segon|segundo|segundos))?"
 )
 
 
@@ -71,7 +71,7 @@ async def create_reminder(ctx: utils.Context) -> None:
         time += int(match.group("seconds"))
 
     if time < 60:
-        await ctx.respond("El temps del recordatori es massa curt.")
+        await ctx.respond("El temps del recordatori és massa curt.")
         return
 
     time = datetime.datetime.now() + datetime.timedelta(seconds=time)
@@ -98,7 +98,7 @@ async def create_reminder(ctx: utils.Context) -> None:
     )
 
     await ctx.respond(
-        f"Recordatori guardat! El recordatori sera enviat <t:{int(time.timestamp())}:F>!\nID: {reminder_id}"
+        f"Recordatori guardat! El recordatori serà enviat <t:{int(time.timestamp())}:F>!\nID: {reminder_id}"
     )
 
 
@@ -113,11 +113,11 @@ async def delete_reminder(ctx: utils.Context) -> None:
     Deletes a reminder.
     """
     if not ctx.options.reminder_id:
-        await ctx.respond("No he pogut entendre l'ID del recordatori.")
+        await ctx.respond("No he pogut entendre la ID del recordatori.")
         return
 
     if len(ctx.options.reminder_id) != 8:
-        await ctx.respond("La ID es invalida.")
+        await ctx.respond("La ID és invà-lida.")
         return
 
     row = await ctx.bot.db.execute_asyncio(
@@ -182,11 +182,11 @@ async def reminder_info(ctx: utils.Context) -> None:
     Shows information about a reminder.
     """
     if not ctx.options.reminder_id:
-        await ctx.respond("No he pogut entendre l'ID del recordatori.")
+        await ctx.respond("No he pogut entendre la ID del recordatori.")
         return
 
     if len(ctx.options.reminder_id) != 8:
-        await ctx.respond("La ID es invalida.")
+        await ctx.respond("La ID és invàlida.")
         return
 
     row = await ctx.bot.db.execute_asyncio(
