@@ -49,12 +49,23 @@ class ConfigLavalink(t.Dict[str, t.Any]):
         self.__dict__ = self
 
 
+class ConfigCassandra(t.Dict[str, t.Any]):
+    hosts: t.List[str]
+    port: int
+    keyspace: str
+
+    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
+        super(ConfigCassandra, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+
 class Config(t.Dict[str, t.Any]):
     discord: ConfigDiscord
     reaction_roles: t.Dict[str, ConfigReactionRoles]
     notifications: t.List[ConfigNotifications]
     commands: ConfigCommands
     lavalink: ConfigLavalink
+    cassandra: ConfigCassandra
 
     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
         super(Config, self).__init__(*args, **kwargs)
