@@ -117,7 +117,7 @@ async def delete_reminder(ctx: utils.Context) -> None:
         return
 
     if len(ctx.options.reminder_id) != 8:
-        await ctx.respond("La ID és invà-lida.")
+        await ctx.respond("La ID és invàlida.")
         return
 
     row = await ctx.bot.db.execute_asyncio(
