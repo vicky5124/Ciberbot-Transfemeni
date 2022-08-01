@@ -13,3 +13,4 @@ __pycache__
 *.toml
 *.db
 *.diff
+restart_scylla.sh
