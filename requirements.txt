@@ -1,6 +1,5 @@
-hikari[speedups]==2.0.0.dev108
-#hikari-lightbulb[crontrigger]==2.2.1
-git+https://github.com/tandemdude/hikari-lightbulb#egg=hikari-lightbulb[crontrigger]
+hikari[speedups]==2.0.0.dev109
+hikari-lightbulb[crontrigger]==2.2.4
 
 aiofiles==0.8.0
 cassandra-driver==3.25.0
