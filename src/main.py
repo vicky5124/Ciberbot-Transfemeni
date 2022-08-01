@@ -25,7 +25,8 @@ class CiberBot(lightbulb.BotApp):
             | hikari.Intents.GUILDS
             | hikari.Intents.MESSAGE_CONTENT
             | hikari.Intents.GUILD_MESSAGE_REACTIONS
-            | hikari.Intents.GUILD_VOICE_STATES,
+            | hikari.Intents.GUILD_VOICE_STATES
+            | hikari.Intents.GUILD_MEMBERS,
         )
 
         self.config: Config = config
