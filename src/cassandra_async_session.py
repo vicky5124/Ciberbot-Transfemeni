@@ -24,14 +24,14 @@ class AsyncioSession(Session):
         cassandra_fut: ResponseFuture,
         result: t.Any,
     ) -> None:
-        if async_fut.cancelled():
+        if async_fut.done():
             return
 
         result_set = ResultSet(cassandra_fut, result)
         self._asyncio_loop.call_soon_threadsafe(async_fut.set_result, result_set)
 
     def _asyncio_exception(self, async_fut: asyncio.Future[t.Any], exc: t.Any) -> None:
-        if async_fut.cancelled():
+        if async_fut.done():
             return
 
         self._asyncio_loop.call_soon_threadsafe(async_fut.set_exception, exc)
