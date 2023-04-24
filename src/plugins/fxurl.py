@@ -1,3 +1,4 @@
+import asyncio
 import re
 import typing as t
 from urllib.parse import urlparse
@@ -39,8 +40,10 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
     # If the message had URLs that werent twitter or pixiv, skip the fixing.
     if msg_to_send:
         msg_to_send = f"He trobat contingut que es veu incorrectament en Discord i l'he corregit!\n{msg_to_send}"
-        await msg.edit(flags=MessageFlag.SUPPRESS_EMBEDS)
         await msg.respond(msg_to_send, reply=True)
+        # The embed in the original message may be delayed. Supress it after the timeout.
+        await asyncio.sleep(10)
+        await msg.edit(flags=MessageFlag.SUPPRESS_EMBEDS)
 
 
 def load(bot: main.CiberBot) -> None:
