@@ -37,6 +37,7 @@ class CiberBot(lightbulb.BotApp):
 
 
 def run() -> None:
+    # uvloop only works on posix systems like MacOS or Linux
     if os.name != "nt":
         import uvloop
 

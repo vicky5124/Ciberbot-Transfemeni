@@ -164,7 +164,7 @@ async def clear_reminders(ctx: utils.Context) -> None:
             (ctx.author.id, i.id, i.datetime),
         )
 
-    await ctx.respond("Tots els recordatoris eliminats!")
+    await ctx.respond("Tots els recordatoris han sigut eliminats!")
 
 
 @reminder.child
