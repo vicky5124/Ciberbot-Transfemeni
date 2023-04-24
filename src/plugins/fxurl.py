@@ -1,4 +1,3 @@
-import asyncio
 import re
 import typing as t
 from urllib.parse import urlparse
@@ -14,9 +13,9 @@ plugin = utils.Plugin("FX URLs")
 URL_REGEX = r"""((?:(?:https|ftp|http)?:(?:/{1,3}|[a-z0-9%])|[a-z0-9.\-]+[.](?:com|org|es|cat|net)/)(?:[^\s()<>{}\[\]]+|\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\))+(?:\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’])|(?:(?<!@)[a-z0-9]+(?:[.\-][a-z0-9]+)*[.](?:com|uk|ac)\b/?(?!@)))"""
 
 
-@plugin.listener(hikari.MessageCreateEvent)  # type: ignore
+@plugin.listener(hikari.MessageCreateEvent, bind=False)
 async def on_message(event: hikari.MessageCreateEvent) -> None:
-    msg = event.message
+    msg = event.message;
 
     # Check if the message content is not empty nor None, so the regex expression works.
     if not msg.content:
@@ -30,25 +29,19 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
 
     msg_to_send = ""
 
-    for idx, i in enumerate(urls):
+    for i in urls:
         url = urlparse(i)
-        if (
-            "twitter" in url.netloc
-            and "fx" not in url.netloc
-            and "vx" not in url.netloc
-        ):
-            # msg_to_send += f"[Link {idx}](https://fxtwitter.com{url.path}) "
-            msg_to_send += f"https://fxtwitter.com{url.path} "
+        if "twitter" in url.netloc and "fx" not in url.netloc:
+            msg_to_send += f"https://fxtwitter.com{url.path}\n"
         if "pixiv" in url.netloc and "fx" not in url.netloc:
-            # msg_to_send += f"[Link {idx}](https://fxpixiv.net{url.path}) "
-            msg_to_send += f"https://fxpixiv.net{url.path} "
+            msg_to_send += f"https://fxpixiv.net{url.path}\n"
+
 
     # If the message had URLs that werent twitter or pixiv, skip the fixing.
     if msg_to_send:
-        await msg.respond(msg_to_send, reply=True)
-        # The embed in the original message may be delayed. Supress it after the timeout.
-        await asyncio.sleep(10)
+        msg_to_send = f"He torbat contingut que es veu incorrectament en Discord i l'he corregit!\n{msg_to_send}"
         await msg.edit(flags=MessageFlag.SUPPRESS_EMBEDS)
+        await msg.respond(msg_to_send, reply=True)
 
 
 def load(bot: main.CiberBot) -> None:
