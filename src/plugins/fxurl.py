@@ -38,7 +38,7 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
 
     # If the message had URLs that werent twitter or pixiv, skip the fixing.
     if msg_to_send:
-        msg_to_send = f"He torbat contingut que es veu incorrectament en Discord i l'he corregit!\n{msg_to_send}"
+        msg_to_send = f"He trobat contingut que es veu incorrectament en Discord i l'he corregit!\n{msg_to_send}"
         await msg.edit(flags=MessageFlag.SUPPRESS_EMBEDS)
         await msg.respond(msg_to_send, reply=True)
 
