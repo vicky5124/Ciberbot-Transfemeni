@@ -13,9 +13,9 @@ plugin = utils.Plugin("FX URLs")
 URL_REGEX = r"""((?:(?:https|ftp|http)?:(?:/{1,3}|[a-z0-9%])|[a-z0-9.\-]+[.](?:com|org|es|cat|net)/)(?:[^\s()<>{}\[\]]+|\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\))+(?:\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’])|(?:(?<!@)[a-z0-9]+(?:[.\-][a-z0-9]+)*[.](?:com|uk|ac)\b/?(?!@)))"""
 
 
-@plugin.listener(hikari.MessageCreateEvent, bind=False)
+@plugin.listener(hikari.MessageCreateEvent)  # type: ignore
 async def on_message(event: hikari.MessageCreateEvent) -> None:
-    msg = event.message;
+    msg = event.message
 
     # Check if the message content is not empty nor None, so the regex expression works.
     if not msg.content:
@@ -32,10 +32,9 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
     for i in urls:
         url = urlparse(i)
         if "twitter" in url.netloc and "fx" not in url.netloc:
-            msg_to_send += f"https://fxtwitter.com{url.path}\n"
+            msg_to_send += f"https://fxtwitter.com{url.path} "
         if "pixiv" in url.netloc and "fx" not in url.netloc:
-            msg_to_send += f"https://fxpixiv.net{url.path}\n"
-
+            msg_to_send += f"https://fxpixiv.net{url.path} "
 
     # If the message had URLs that werent twitter or pixiv, skip the fixing.
     if msg_to_send:
