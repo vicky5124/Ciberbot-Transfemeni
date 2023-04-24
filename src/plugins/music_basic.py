@@ -379,11 +379,6 @@ async def queue(ctx: utils.Context) -> None:
             .add_interactive_button(1, "end", emoji="⏭️")
         )
 
-        # button_start = components.add_interactive_button(1, "start", emoji="⏮️")
-        # button_prev = components.add_interactive_button(1, "prev", emoji="⬅️")
-        # button_next = components.add_interactive_button(1, "next", emoji="➡️")
-        # button_end = components.add_interactive_button(1, "end", emoji="⏭️")
-
         def predicate(event: hikari.InteractionCreateEvent) -> bool:
             return (
                 event.interaction.type == 3
