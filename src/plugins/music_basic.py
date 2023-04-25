@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import typing as t
 
 import hikari
@@ -74,19 +73,14 @@ async def _join(ctx: utils.Context) -> t.Optional[hikari.Snowflake]:
         return None
 
     if not ctx.options.channel:
-        states = ctx.bot.cache.get_voice_states_view_for_guild(ctx.guild_id)
-        voice_state = [
-            state
-            async for state in states.iterator().filter(
-                lambda i: i.user_id == ctx.author.id
-            )
-        ]
+        voice_state = ctx.bot.cache.get_voice_state(ctx.guild_id, ctx.author.id)
 
         if not voice_state:
-            await ctx.respond("Connecta't a un canal de veu primer.")
+            embed = hikari.Embed(title="You are not in a voice channel!")
+            await ctx.respond(embed)
             return None
 
-        channel_id = voice_state[0].channel_id
+        channel_id = voice_state.channel_id
     else:
         channel_id = ctx.options.channel.id
 
@@ -377,22 +371,13 @@ async def queue(ctx: utils.Context) -> None:
         start: int = 0
         end: int = per_page
 
-        components = ctx.bot.rest.build_action_row()
-
-        button_start = components.add_button(1, "start")
-        button_prev = components.add_button(1, "prev")
-        button_next = components.add_button(1, "next")
-        button_end = components.add_button(1, "end")
-
-        button_start.set_emoji("⏮️")
-        button_prev.set_emoji("⬅️")
-        button_next.set_emoji("➡️")
-        button_end.set_emoji("⏭️")
-
-        button_start.add_to_container()
-        button_prev.add_to_container()
-        button_next.add_to_container()
-        button_end.add_to_container()
+        components = (
+            ctx.bot.rest.build_message_action_row()
+            .add_interactive_button(1, "start", emoji="⏮️")
+            .add_interactive_button(1, "prev", emoji="⬅️")
+            .add_interactive_button(1, "next", emoji="➡️")
+            .add_interactive_button(1, "end", emoji="⏭️")
+        )
 
         def predicate(event: hikari.InteractionCreateEvent) -> bool:
             return (
@@ -418,24 +403,24 @@ async def queue(ctx: utils.Context) -> None:
 
             assert isinstance(event.interaction, hikari.ComponentInteraction)
 
-            if event.interaction.custom_id == button_prev.custom_id:
+            if event.interaction.custom_id == "prev":
                 start -= per_page
                 end -= per_page
 
                 if start < 0:
                     start = 0
                     end = per_page
-            elif event.interaction.custom_id == button_next.custom_id:
+            elif event.interaction.custom_id == "next":
                 start += per_page
                 end += per_page
 
                 if end > len(tracks):
                     end = len(tracks)
                     start = end - per_page
-            elif event.interaction.custom_id == button_start.custom_id:
+            elif event.interaction.custom_id == "start":
                 start = 0
                 end = per_page
-            elif event.interaction.custom_id == button_end.custom_id:
+            elif event.interaction.custom_id == "end":
                 start = len(tracks) - per_page
                 end = len(tracks)
 

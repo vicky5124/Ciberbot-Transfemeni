@@ -1,13 +1,13 @@
-hikari[speedups]==2.0.0.dev109
-hikari-lightbulb[crontrigger]==2.2.4
+hikari[speedups]==2.0.0.dev118
+hikari-lightbulb[crontrigger]==2.3.3
 
-aiofiles==0.8.0
-cassandra-driver==3.25.0
-shortuuid==1.0.9
+aiofiles==23.1.0
+cassandra-driver==3.26.0
+shortuuid==1.0.11
 
-uvloop>=0.16; sys_platform != "win32"
-aiohttp==3.8.1
+uvloop>=0.17; sys_platform != "win32"
+aiohttp==3.8.4
 toml==0.10.2
 
 lavasnek-rs==0.1.0a5
-yt-dlp==2022.4.8
+yt-dlp==2023.3.4

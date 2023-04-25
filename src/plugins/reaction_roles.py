@@ -14,7 +14,7 @@ async def load_roles_and_emojis(plug: utils.Plugin, _: hikari.StartingEvent) -> 
 
     rr: t.Dict[int, t.Dict[str, int]] = {}
 
-    for (key, value) in reaction_roles.items():
+    for key, value in reaction_roles.items():
         logging.info(f"Loading reaction role '{key}'")
         rr[value.message_id] = dict(zip(value.emoji_names, value.role_ids))
 
@@ -25,7 +25,7 @@ async def load_roles_and_emojis(plug: utils.Plugin, _: hikari.StartingEvent) -> 
 async def reaction_add_event(
     plug: utils.Plugin, event: hikari.GuildReactionAddEvent
 ) -> None:
-    for (message_id, rr) in plug.d.reaction_roles.items():
+    for message_id, rr in plug.d.reaction_roles.items():
         if event.message_id == message_id:
             emoji_name = str(event.emoji_name)
 
@@ -41,7 +41,7 @@ async def reaction_add_event(
 async def reaction_remove_event(
     plug: utils.Plugin, event: hikari.GuildReactionDeleteEvent
 ) -> None:
-    for (message_id, rr) in plug.d.reaction_roles.items():
+    for message_id, rr in plug.d.reaction_roles.items():
         if event.message_id == message_id:
             emoji_name = str(event.emoji_name)
 

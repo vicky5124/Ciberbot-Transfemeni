@@ -29,4 +29,4 @@ jobs:
         run: black src --check
 
       - name: MyPy linting
-        run: mypy src
+        run: mypy --config-file mypy.ini src

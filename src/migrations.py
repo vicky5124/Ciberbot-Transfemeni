@@ -103,7 +103,7 @@ async def validate_existing_migrations(
 async def apply_migrations(
     db: AsyncioSession, physical_migrations: t.Dict[int, t.Tuple[str, str, str]]
 ) -> None:
-    for (ph_migration_id, ph_migration) in physical_migrations.items():
+    for ph_migration_id, ph_migration in physical_migrations.items():
         logging.info(f"Applying migration '{ph_migration_id} - {ph_migration[0]}'")
 
         async with aiofiles.open(f"migrations/{ph_migration[2]}", "r") as f:
