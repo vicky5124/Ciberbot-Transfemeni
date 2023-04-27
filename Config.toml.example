@@ -6,18 +6,21 @@ guild_ids = [182892283111276544] # Guilds to register slash commands on.
 [commands]
 eval_timeout = 10.0
 
-[reaction_roles.color_roles] # there can be multiple reaction_roles
+# there can be multiple `reaction_roles`
+[reaction_roles.color_roles]
 message_id = 960190427456221224
 # Match the role id and the emoji name with indexes.
 role_ids = [960191030479704115, 960191078248628234, 960205154488037436]
 emoji_names = ["💜", "💚", "doggo"]
 
-[[notifications]] # there can be multiple notifications
+# there can be multiple `notifications`
+[[notifications]]
 channel_id = 911224587931488296
 message = "Test"
 cron = "0 11 * * *"
 
-[lavalink] # https://github.com/freyacodes/Lavalink
+# https://github.com/freyacodes/Lavalink
+[lavalink]
 host = "127.0.0.1"
 port = 2333
 password = "youshallnotpass"
@@ -26,3 +29,13 @@ password = "youshallnotpass"
 hosts = ["127.0.0.1"]
 port = 9042
 keyspace = "ciberbot"
+
+# there can be multiple `welcome`
+[welcome.casal]
+guild_id = 182892283111276544
+channel_id = 706995131332689980
+headings = [
+    "Welcome %u to the server!"
+    "Greetings %u!"
+]
+message = """Make sure to read the rules in <#753325055185911858>!"""

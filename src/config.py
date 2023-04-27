@@ -59,6 +59,17 @@ class ConfigCassandra(t.Dict[str, t.Any]):
         self.__dict__ = self
 
 
+class ConfigWelcome(t.Dict[str, t.Any]):
+    guild_id: int
+    channel_id: int
+    headings: t.List[str]
+    message: str
+
+    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
+        super(ConfigWelcome, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+
 class Config(t.Dict[str, t.Any]):
     discord: ConfigDiscord
     reaction_roles: t.Dict[str, ConfigReactionRoles]
@@ -66,6 +77,7 @@ class Config(t.Dict[str, t.Any]):
     commands: ConfigCommands
     lavalink: ConfigLavalink
     cassandra: ConfigCassandra
+    welcome: t.Dict[str, ConfigWelcome]
 
     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
         super(Config, self).__init__(*args, **kwargs)
