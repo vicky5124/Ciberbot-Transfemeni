@@ -5,6 +5,7 @@ import hashlib
 import logging
 import traceback
 import typing as t
+from collections import defaultdict
 
 import aiofiles
 from src.cassandra_async_session import AsyncioSession
@@ -39,34 +40,16 @@ async def run_migrations(db: AsyncioSession) -> None:
 
 async def get_physical_migrations() -> t.Dict[int, t.Tuple[str, str, str]]:
     valid_file_re = re.compile(r"^(\d+)-(.+)\.cql$")
-    all_filenames = os.listdir("migrations")
-    valid_files = [f for f in all_filenames if valid_file_re.match(f)]
+    groups = defaultdict(list)
 
-    checksums = []
+    for filename in os.listdir("migrations"):
+        if m := valid_file_re.match(filename):
+            version, description = m.groups()
+            checksum = await get_checksum(f"migrations/{filename}")
+            entry = int(version), (description, checksum, filename)
+            groups[description == "drop"].append(entry)
 
-    for filename in valid_files:
-        checksum = await get_checksum(f"migrations/{filename}")
-        checksums.append(checksum)
-
-    parsed_files = []
-    parsed_files_drops = []
-
-    for file in valid_files:
-        split = file.split("-")
-        version = int(split[0])
-        description = split[1][:-4]
-        if description == "drop":
-            parsed_files_drops.append((version, description))
-        else:
-            parsed_files.append((version, description))
-
-    values = [
-        (int(f[0]), f[1], checksums[idx], valid_files[idx])
-        for idx, f in enumerate(parsed_files)
-    ]
-    values.sort(key=lambda x: x[0])
-
-    return {v[0]: (v[1], v[2], v[3]) for v in values}
+    return dict(sorted(groups[False]))
 
 
 async def validate_existing_migrations(
