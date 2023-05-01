@@ -35,7 +35,7 @@ keyspace = "ciberbot"
 guild_id = 182892283111276544
 channel_id = 706995131332689980
 headings = [
-    "Welcome %u to the server!"
-    "Greetings %u!"
+    "Welcome %u to the server!",
+    "Greetings %u!",
 ]
 message = """Make sure to read the rules in <#753325055185911858>!"""
