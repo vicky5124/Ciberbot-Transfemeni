@@ -16,7 +16,7 @@ plugin = utils.Plugin("Notifications", include_datastore=True)
 async def start_all_tasks(plug: utils.Plugin, _: hikari.StartedEvent) -> None:
     async def cron_task(item: config.ConfigNotifications) -> None:
         probability = item.probability if "probability" in item else None
-        if probability != None:
+        if probability is not None:
             if not (random.random() < probability):
                 return
 
