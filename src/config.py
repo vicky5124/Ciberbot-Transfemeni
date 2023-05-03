@@ -25,6 +25,7 @@ class ConfigNotifications(t.Dict[str, t.Any]):
     channel_id: int
     message: str
     cron: str
+    probability: t.Optional[float]
 
     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
         super(ConfigNotifications, self).__init__(*args, **kwargs)
