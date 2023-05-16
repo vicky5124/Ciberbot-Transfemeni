@@ -30,16 +30,17 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
 
     msg_to_send = ""
 
-    for i in urls:
+    for idx, i in enumerate(urls):
         url = urlparse(i)
-        if "twitter" in url.netloc and "fx" not in url.netloc:
+        if "twitter" in url.netloc and "fx" not in url.netloc and "vx" not in url.netloc:
+            #msg_to_send += f"[Link {idx}](https://fxtwitter.com{url.path}) "
             msg_to_send += f"https://fxtwitter.com{url.path} "
-        if "pixiv" in url.netloc and "fx" not in url.netloc:
+        if "pixiv" in url.netloc and "fx" not in url.netloc and "vx" not in url.netloc:
+            #msg_to_send += f"[Link {idx}](https://fxpixiv.net{url.path}) "
             msg_to_send += f"https://fxpixiv.net{url.path} "
 
     # If the message had URLs that werent twitter or pixiv, skip the fixing.
     if msg_to_send:
-        msg_to_send = f"He trobat contingut que es veu incorrectament en Discord i l'he corregit!\n{msg_to_send}"
         await msg.respond(msg_to_send, reply=True)
         # The embed in the original message may be delayed. Supress it after the timeout.
         await asyncio.sleep(10)
