@@ -35,6 +35,9 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
 
     # If the message had URLs that weren't twitter or pixiv, skip the fixing.
     if fx_url:
+        await msg.respond(fx_url, reply=True)
+        # The embed in the original message may be delayed. Supress it after the timeout.
+        await asyncio.sleep(10)
         await msg.edit(flags=MessageFlag.SUPPRESS_EMBEDS)
         await msg.respond(fx_url, reply=True)
 
