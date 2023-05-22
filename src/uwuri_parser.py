@@ -15,8 +15,8 @@ def uwuriparser(link: str) -> t.List[str]:
         # Checks if the first character is an opening bracket or quotation mark, then checks if the last is too
         if word[0] in """(['‘"“{""":
             posa += 1
-        if word[len(word) - (posb + 1)] in """)]'’"”}""":
-            posb += 1
+            if word[len(word) - (posb + 1)] in """)]'’"”}""":
+                posb += 1
         # Runs word against python's built-in URI checker
         if posb == 0:
             parsed = urlparse(word[posa:])
@@ -26,3 +26,4 @@ def uwuriparser(link: str) -> t.List[str]:
         if parsed.netloc:
             urls.append(word)
     return urls
+
