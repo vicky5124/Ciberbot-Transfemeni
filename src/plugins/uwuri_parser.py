@@ -1,4 +1,6 @@
 from urllib.parse import urlparse
+from typing import List
+
 def uwuriparser(link: List[str]) -> List[str]:
     urls = []
     words = link.split()
