@@ -13,8 +13,8 @@ def uwuriparser(link: str) -> t.List[str]:
         if word[len(word) - 1] in """!$&(*,;""":
             posb += 1
         # Checks if the first character is an opening bracket or quotation mark, then checks if the last is too
-        if (word[0] in """(['‘"“{"""):
-            if (word[len(word) - (posb + 1)] in """)]'’"”}"""):
+        if word[0] in """(['‘"“{""":
+            if word[len(word) - (posb + 1)] in """)]'’"”}""":
                 posb += 1
             posa += 1
         # Runs word against python's built-in URI checker
