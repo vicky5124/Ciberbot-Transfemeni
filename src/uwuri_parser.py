@@ -18,7 +18,10 @@ def uwuriparser(link: str) -> t.List[str]:
         if word[len(word) - (posb + 1)] in """)]'’"”}""":
             posb += 1
         # Runs word against python's built-in URI checker
-        parsed = urlparse(word[posa:-posb])
+        if posb == 0:
+            parsed = urlparse(word[posa:])
+        else:
+            parsed = urlparse(word[posa:-posb])
         # If URI, Appends to List
         if parsed.netloc:
             urls.append(word)
