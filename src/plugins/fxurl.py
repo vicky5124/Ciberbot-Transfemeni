@@ -32,11 +32,15 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
 
     for idx, i in enumerate(urls):
         url = urlparse(i)
-        if "twitter" in url.netloc and "fx" not in url.netloc and "vx" not in url.netloc:
-            #msg_to_send += f"[Link {idx}](https://fxtwitter.com{url.path}) "
+        if (
+            "twitter" in url.netloc
+            and "fx" not in url.netloc
+            and "vx" not in url.netloc
+        ):
+            # msg_to_send += f"[Link {idx}](https://fxtwitter.com{url.path}) "
             msg_to_send += f"https://fxtwitter.com{url.path} "
         if "pixiv" in url.netloc and "fx" not in url.netloc:
-            #msg_to_send += f"[Link {idx}](https://fxpixiv.net{url.path}) "
+            # msg_to_send += f"[Link {idx}](https://fxpixiv.net{url.path}) "
             msg_to_send += f"https://fxpixiv.net{url.path} "
 
     # If the message had URLs that werent twitter or pixiv, skip the fixing.
