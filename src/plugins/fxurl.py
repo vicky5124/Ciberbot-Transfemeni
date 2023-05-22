@@ -1,5 +1,6 @@
 import re
 import typing as t
+import uwuriparser
 from urllib.parse import urlparse
 
 import hikari
@@ -12,7 +13,7 @@ plugin = utils.Plugin("FX URLs")
 
 # URL_REGEX = r"""((?:(?:https|ftp|http)?:(?:/{1,3}|[a-z0-9%])|[a-z0-9.\-]+[.](?:com|org|es|cat|net)/)(?:[^\s()<>{}\[\]]+|\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\))+(?:\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’])|(?:(?<!@)[a-z0-9]+(?:[.\-][a-z0-9]+)*[.](?:com|uk|ac)\b/?(?!@)))"""
 # Simplified Regex to only care about .com and .net and http and https, also escaped /
-URL_REGEX = r"""((?:(?:https|http)?:(?:\/{1,3}|[\w%])|[\w.\-]+[.](?:com|net)\/)(?:[^\s()<>{}\[\]]+|\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\))+(?:\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’])|(?:(?<!@)[\w]+(?:[.\-][\w]+)*[.](?:com|net)\b\/?(?!@)))"""
+#URL_REGEX = r"""((?:(?:https|http)?:(?:\/{1,3}|[\w%])|[\w.\-]+[.](?:com|net)\/)(?:[^\s()<>{}\[\]]+|\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\))+(?:\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’])|(?:(?<!@)[\w]+(?:[.\-][\w]+)*[.](?:com|net)\b\/?(?!@)))"""
 
 
 @plugin.listener(hikari.MessageCreateEvent)  # type: ignore
@@ -23,7 +24,7 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
     if not msg.content:
         return
 
-    urls: t.List[str] = re.findall(URL_REGEX, msg.content)
+    urls: t.List[str] = uwuriparser(msg.content)
 
     # Check if there's URLs in the message.
     if not urls:
