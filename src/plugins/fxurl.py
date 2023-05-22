@@ -39,7 +39,6 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
         # The embed in the original message may be delayed. Supress it after the timeout.
         await asyncio.sleep(10)
         await msg.edit(flags=MessageFlag.SUPPRESS_EMBEDS)
-        await msg.respond(fx_url, reply=True)
 
 
 def load(bot: main.CiberBot) -> None:
