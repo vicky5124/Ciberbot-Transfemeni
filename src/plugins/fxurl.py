@@ -9,6 +9,7 @@ from src import utils, main
 
 plugin = utils.Plugin("FX URLs")
 
+
 @plugin.listener(hikari.MessageCreateEvent)  # type: ignore
 async def on_message(event: hikari.MessageCreateEvent) -> None:
     msg = event.message
