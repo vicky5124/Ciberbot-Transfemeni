@@ -17,7 +17,7 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
     if not msg.content:
         return
 
-    urls: t.List[str] = uwuriparser(msg.content)
+    urls: str = uwuriparser(msg.content)
 
     # Check if there's URLs in the message.
     if not urls:
