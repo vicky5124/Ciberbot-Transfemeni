@@ -32,7 +32,7 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
 
     for idx, i in enumerate(urls):
         url = urlparse(i)
-        if "twitter.com" == url.hostname or "www.twitter.com" == hrl.hostname or "mobile.twitter.com" == url.hostname:
+        if "twitter.com" == url.hostname or "www.twitter.com" == url.hostname or "mobile.twitter.com" == url.hostname:
             #msg_to_send += f"[Link {idx}](https://fxtwitter.com{url.path}) "
             fx_url += f"https://fxtwitter.com{url.path}\n"
         if "pixiv.net" == url.hostname or "www.pixiv.net" == url.hostname:
