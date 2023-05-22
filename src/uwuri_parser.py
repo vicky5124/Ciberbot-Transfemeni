@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
-from typing import List
+import typing as t
 
-def uwuriparser(link: str) -> List[str]:
+def uwuriparser(link: str) -> t.List[str]:
     urls = []
     words = link.split()
     posa = 0
