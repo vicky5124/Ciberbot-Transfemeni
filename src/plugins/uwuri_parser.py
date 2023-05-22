@@ -1,5 +1,5 @@
 from urllib.parse import urlparse
-def uwuriparser(link: str):
+def uwuriparser(link: str) -> str:
     urls = []
     words = link.split()
     posa = 0
