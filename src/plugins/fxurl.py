@@ -1,3 +1,4 @@
+import asyncio
 import typing as t
 from src.uwuri_parser import uwuriparser
 from urllib.parse import urlparse
