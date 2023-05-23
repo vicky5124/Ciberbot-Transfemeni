@@ -26,4 +26,3 @@ def uwuriparser(link: str) -> t.List[str]:
         if parsed.netloc:
             urls.append(word)
     return urls
-
