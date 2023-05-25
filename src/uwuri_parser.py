@@ -9,10 +9,10 @@ def uwuriparser(link: str) -> t.List[ParseResult]:
 
     for word in words:
         # Check if last character is punctuation unlikely to be found as the last character in a URI
-        if word[-1] in """!$&(*,;""":
+        while word[-1] in """!$&(*,;""":
             word = word[:-1]
         # Checks if the first character is an opening bracket or quotation mark, then checks if the last is too
-        if word[0] in """(['‘"“{""":
+        while word[0] in """(['‘"“{""":
             word = word[1:]
             if word[-1] in """)]'’"”}""":
                 word = word[:-1]
