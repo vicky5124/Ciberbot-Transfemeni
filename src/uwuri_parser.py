@@ -1,8 +1,8 @@
-from urllib.parse import urlparse
+from urllib.parse import ParseResult, urlparse
 import typing as t
 
 
-def uwuriparser(link: str) -> t.List[str]:
+def uwuriparser(link: str) -> t.List[ParseResult]:
     # Initialise Empty Variables
     urls = []
     words = link.split()

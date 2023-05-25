@@ -1,7 +1,7 @@
 import asyncio
 import typing as t
 from src.uwuri_parser import uwuriparser
-from urllib.parse import urlparse
+from urllib.parse import ParseResult
 
 import hikari
 from hikari.messages import MessageFlag
@@ -19,7 +19,7 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
     if not msg.content:
         return
 
-    urls: t.List[str] = uwuriparser(msg.content)
+    urls: t.List[ParseResult] = uwuriparser(msg.content)
 
     # Check if there's URLs in the message.
     if not urls:
@@ -27,11 +27,10 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
 
     fx_url = ""
 
-    for idx, i in enumerate(urls):
-        url = urlparse(i)
+    for url in urls:
         if url.hostname in {"twitter.com", "www.twitter.com", "mobile.twitter.com"}:
             fx_url += f"https://fxtwitter.com{url.path}\n"
-        if url.hostname in {"pixiv.net", "www.pixiv.net"}:
+        elif url.hostname in {"pixiv.net", "www.pixiv.net"}:
             fx_url += f"https://fxpixiv.net{url.path}\n"
 
     # If the message had URLs that weren't twitter or pixiv, skip the fixing.
