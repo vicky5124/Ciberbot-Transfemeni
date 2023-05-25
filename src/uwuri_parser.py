@@ -6,23 +6,20 @@ def uwuriparser(link: str) -> t.List[str]:
     # Initialise Empty Variables
     urls = []
     words = link.split()
-    posa = 0
-    posb = 0
+
     for word in words:
         # Check if last character is punctuation unlikely to be found as the last character in a URI
-        if word[len(word) - 1] in """!$&(*,;""":
-            posb += 1
+        if word[-1] in """!$&(*,;""":
+            word = word[:-1]
         # Checks if the first character is an opening bracket or quotation mark, then checks if the last is too
         if word[0] in """(['‘"“{""":
-            posa += 1
-            if word[len(word) - (posb + 1)] in """)]'’"”}""":
-                posb += 1
+            word = word[1:]
+            if word[-1] in """)]'’"”}""":
+                word = word[:-1]
         # Runs word against python's built-in URI checker
-        if posb == 0:
-            parsed = urlparse(word[posa:])
-        else:
-            parsed = urlparse(word[posa:-posb])
+
+        parsed = urlparse(word)
         # If URI, Appends to List
         if parsed.netloc:
-            urls.append(word)
+            urls.append(parsed)
     return urls
