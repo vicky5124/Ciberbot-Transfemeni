@@ -1,7 +1,7 @@
 import asyncio
 import re
 import typing as t
-from urllib.parse import urlparse
+from urllib.parse import urlparse, quote, unquote
 
 import hikari
 from hikari.messages import MessageFlag
@@ -31,6 +31,20 @@ def collect_previewing_links(ast: t.List[Node]) -> t.Iterator[str]:
         yield from visit(node)
 
 
+TWITTER_HOSTS = {
+    "twitter.com",
+    "www.twitter.com",
+    "m.twitter.com",
+    "mobile.twitter.com",
+}
+
+PIXIV_HOSTS = {
+    "pixiv.net",
+    "www.pixiv.net",
+    "m.pixiv.net",
+}
+
+
 @plugin.listener(hikari.MessageCreateEvent)  # type: ignore
 async def on_message(event: hikari.MessageCreateEvent) -> None:
     msg = event.message
@@ -40,16 +54,15 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
 
     for i in collect_previewing_links(ast):
         url = urlparse(i)
-        if (
-            "twitter" in url.netloc
-            and "fx" not in url.netloc
-            and "vx" not in url.netloc
-        ):
-            # msg_to_send += f"[Link {idx}](https://fxtwitter.com{url.path}) "
-            msg_to_send += f"https://fxtwitter.com{url.path} "
-        if "pixiv" in url.netloc and "fx" not in url.netloc:
-            # msg_to_send += f"[Link {idx}](https://fxpixiv.net{url.path}) "
-            msg_to_send += f"https://fxpixiv.net{url.path} "
+        if url.scheme.lower() not in {"http", "https"}:
+            continue
+        host = quote(unquote(url.netloc).lower())
+        path = quote(unquote(url.path))
+        if host in TWITTER_HOSTS:
+            if re.fullmatch(r"/[^/]+/status/\d+(?:/photo/\d+)?", path.lower()):
+                msg_to_send += f"https://fxtwitter.com{path} "
+        if host in PIXIV_HOSTS:
+            msg_to_send += f"https://fxpixiv.net{path} "
 
     # If the message had URLs that werent twitter or pixiv, skip the fixing.
     if msg_to_send:
