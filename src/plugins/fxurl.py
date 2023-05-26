@@ -6,31 +6,39 @@ from urllib.parse import urlparse
 import hikari
 from hikari.messages import MessageFlag
 
+from discord_markdown_ast_parser import parse
+from discord_markdown_ast_parser.parser import Node, NodeType
+
 from src import utils, main
 
 plugin = utils.Plugin("FX URLs")
 
 
-URL_REGEX = r"""((?:(?:https|ftp|http)?:(?:/{1,3}|[a-z0-9%])|[a-z0-9.\-]+[.](?:com|org|es|cat|net)/)(?:[^\s()<>{}\[\]]+|\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\))+(?:\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’])|(?:(?<!@)[a-z0-9]+(?:[.\-][a-z0-9]+)*[.](?:com|uk|ac)\b/?(?!@)))"""
+def collect_previewing_links(ast: t.List[Node]) -> t.Iterator[str]:
+    def visit(node: Node) -> t.Iterator[str]:
+        # don't descend into spoilers
+        if node.node_type == NodeType.SPOILER:
+            return
+
+        if node.node_type == NodeType.URL_WITH_PREVIEW:
+            assert node.url
+            yield node.url
+
+        for node in node.children or []:
+            yield from visit(node)
+
+    for node in ast:
+        yield from visit(node)
 
 
 @plugin.listener(hikari.MessageCreateEvent)  # type: ignore
 async def on_message(event: hikari.MessageCreateEvent) -> None:
     msg = event.message
-
-    # Check if the message content is not empty nor None, so the regex expression works.
-    if not msg.content:
-        return
-
-    urls: t.List[str] = re.findall(URL_REGEX, msg.content)
-
-    # Check if there's URLs in the message.
-    if not urls:
-        return
+    ast = parse(msg.content)
 
     msg_to_send = ""
 
-    for idx, i in enumerate(urls):
+    for i in collect_previewing_links(ast):
         url = urlparse(i)
         if (
             "twitter" in url.netloc
