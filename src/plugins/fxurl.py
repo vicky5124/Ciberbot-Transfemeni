@@ -67,8 +67,44 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
     # If the message had URLs that werent twitter or pixiv, skip the fixing.
     if msg_to_send:
         await msg.respond(msg_to_send, reply=True)
-        # The embed in the original message may be delayed. Supress it after the timeout.
-        await asyncio.sleep(10)
+        await mark_for_embed_suppression(msg)
+
+
+@plugin.listener(hikari.MessageUpdateEvent)  # type: ignore
+async def on_message_updated(event: hikari.MessageUpdateEvent) -> None:
+    await check_embed_suppression(event.message)
+
+
+# Discord clients have a race condition where, if the SUPPRESS_EMBEDS flag update
+# arrives *before* the embeds arrive, they will be shown regardless (until client
+# restarts or channel messages are re-rendered). To work around this, wait for the
+# embed(s) to appear before applying the flag.
+
+embed_suppression_pending: t.Set[int] = set()
+
+async def mark_for_embed_suppression(msg: hikari.Message) -> None:
+    assert msg.id not in embed_suppression_pending
+    embed_suppression_pending.add(msg.id)
+
+    # start a timeout, just in case (some) embeds never arrive
+    asyncio.create_task(embed_suppression_timeout_task(msg))
+
+    # check to see if embeds have already appeared (can happen if they were cached),
+    # and we can suppress them right away
+    await check_embed_suppression(msg)
+
+async def check_embed_suppression(msg: hikari.PartialMessage) -> None:
+    # if this is a marked message and embeds have arrived, suppress them
+    if msg.embeds and msg.id in embed_suppression_pending:
+        embed_suppression_pending.remove(msg.id)
+        await msg.edit(flags=MessageFlag.SUPPRESS_EMBEDS)
+
+async def embed_suppression_timeout_task(msg: hikari.Message) -> None:
+    await asyncio.sleep(10)
+
+    # if the message is still marked, suppress embeds now
+    if msg.id in embed_suppression_pending:
+        embed_suppression_pending.remove(msg.id)
         await msg.edit(flags=MessageFlag.SUPPRESS_EMBEDS)
 
 
