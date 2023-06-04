@@ -15,7 +15,8 @@ class CiberBot(lightbulb.BotApp):
 
     def __init__(self) -> None:
         with open("Config.toml", "r", encoding="utf-8") as file:
-            config = toml.load(file, Config)
+            config_data = toml.load(file)
+            config = Config.init(config_data)
 
         super().__init__(
             token=config.discord.token,

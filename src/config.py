@@ -1,77 +1,90 @@
+import json
 import typing as t
 
 
-class ConfigDiscord(t.Dict[str, t.Any]):
+class CustomDict(t.Dict[str, t.Any]):
+    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
+        super(CustomDict, self).__init__(*args, **kwargs)
+        mapping_proxy = args[0]
+        self.classes = mapping_proxy['__annotations__']
+
+        for name, value in kwargs.items():
+            attr = self.__get_attr(name=name, value=value)
+            self.__setattr__(name, attr)
+
+    def __get_attr(self, *, name=None, value):
+        type_ = type(value)
+        if type_ in [str, float, int]:
+            attr = value
+        else:
+            if not name or not isinstance(self.classes[name], type):
+                if type_ == list:
+                    attr = [self.__get_attr(value=i)
+                            for i in value]
+                else:  # if type_ == dict
+                    attr = {key: self.__get_attr(value=dict_)
+                            for key, dict_ in value.items()}
+            else:  # if issubclass(clase, CustomDict)
+                class_ = self.classes[name]
+                attr = class_.init(value)
+        return attr
+
+    @classmethod
+    def init(cls, data):
+        return cls(cls.__dict__, **data)
+
+    def __hash__(self):
+        return hash(json.dumps(self.__dict__, sort_keys=True))
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return hash(self) == hash(other)
+        return False
+
+
+class ConfigDiscord(CustomDict):
     token: str
     prefix: str
     guild_ids: t.List[int]
 
-    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
-        super(ConfigDiscord, self).__init__(*args, **kwargs)
-        self.__dict__ = self
 
-
-class ConfigReactionRoles(t.Dict[str, t.Any]):
+class ConfigReactionRoles(CustomDict):
     message_id: int
     role_ids: t.List[int]
     emoji_names: t.List[str]
 
-    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
-        super(ConfigReactionRoles, self).__init__(*args, **kwargs)
-        self.__dict__ = self
 
-
-class ConfigNotifications(t.Dict[str, t.Any]):
+class ConfigNotifications(CustomDict):
     channel_id: int
     message: str
     cron: str
     probability: t.Optional[float]
 
-    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
-        super(ConfigNotifications, self).__init__(*args, **kwargs)
-        self.__dict__ = self
 
-
-class ConfigCommands(t.Dict[str, t.Any]):
+class ConfigCommands(CustomDict):
     eval_timeout: float
 
-    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
-        super(ConfigCommands, self).__init__(*args, **kwargs)
-        self.__dict__ = self
 
-
-class ConfigLavalink(t.Dict[str, t.Any]):
+class ConfigLavalink(CustomDict):
     host: str
     port: int
     password: str
 
-    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
-        super(ConfigLavalink, self).__init__(*args, **kwargs)
-        self.__dict__ = self
 
-
-class ConfigCassandra(t.Dict[str, t.Any]):
+class ConfigCassandra(CustomDict):
     hosts: t.List[str]
     port: int
     keyspace: str
 
-    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
-        super(ConfigCassandra, self).__init__(*args, **kwargs)
-        self.__dict__ = self
 
-
-class ConfigWelcome(t.Dict[str, t.Any]):
+class ConfigWelcome(CustomDict):
     guild_id: int
     channel_id: int
     headings: t.List[str]
     message: str
 
-    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
-        super(ConfigWelcome, self).__init__(*args, **kwargs)
-        self.__dict__ = self
 
-
-class Config(t.Dict[str, t.Any]):
+class Config(CustomDict):
     discord: ConfigDiscord
     reaction_roles: t.Dict[str, ConfigReactionRoles]
     notifications: t.List[ConfigNotifications]
@@ -79,7 +92,3 @@ class Config(t.Dict[str, t.Any]):
     lavalink: ConfigLavalink
     cassandra: ConfigCassandra
     welcome: t.Dict[str, ConfigWelcome]
-
-    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
-        super(Config, self).__init__(*args, **kwargs)
-        self.__dict__ = self
