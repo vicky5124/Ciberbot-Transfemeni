@@ -11,7 +11,7 @@ from cassandra.cluster import (
 from cassandra.query import PreparedStatement
 
 
-class AsyncioSession(Session):
+class AsyncioSession(Session): # type: ignore
     def __init__(self, session: Session):
         self.__dict__.update(session.__dict__)
         self._asyncio_loop = asyncio.get_event_loop()
