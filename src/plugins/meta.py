@@ -35,7 +35,7 @@ def start_database(config: config.ConfigCassandra) -> AsyncioSession:
         execution_profiles=profiles,
         protocol_version=4,
     )
-    return load_asyncio_to_session(cluster.connect())
+    return load_asyncio_to_session(cluster.connect(config.keyspace))
 
 
 @plugin.listener(hikari.ShardReadyEvent)
