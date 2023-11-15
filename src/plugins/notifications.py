@@ -24,9 +24,9 @@ async def start_all_tasks(plug: utils.Plugin, _: hikari.StartedEvent) -> None:
         await plug.bot.rest.create_message(
             item.channel_id,
             item.message,
-            mentions_everyone=True,
-            role_mentions=True,
-            user_mentions=True,
+            mentions_everyone=False,
+            role_mentions=False,
+            user_mentions=False,
         )
 
     for i in plug.bot.config.notifications:
